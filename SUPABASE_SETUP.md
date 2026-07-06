@@ -57,16 +57,23 @@ order. It connects **outbound only** — no ports to open.
 2. Copy the [`hermes/`](hermes/) folder onto hermes and:
    ```bash
    cd hermes
-   cp .env.example .env     # add SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY + one alert channel
+   cp .env.example .env     # add SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, WHATSAPP_TO
    npm install
-   npm start                # look for: [realtime] SUBSCRIBED
+   npm start                # first run prints a QR — scan it in WhatsApp → Linked devices
    ```
+   Set `WHATSAPP_TO` to your number (e.g. `447700900123`) or a group JID — run
+   `npm run wa-groups` to list group JIDs. You link WhatsApp once via QR; the
+   session persists in `wa-auth/` (git-ignored).
 3. Keep it running 24/7 with pm2 or systemd — see [hermes/README.md](hermes/README.md).
-4. Pick your alert channel in `.env` (Telegram, Discord, ntfy, a generic webhook
-   to hermes' own endpoint, or any shell command). Every order is also logged to
-   stdout, so `pm2 logs` / `journalctl` is a live feed.
+4. WhatsApp is the primary alert; you can also add Discord / ntfy / a webhook /
+   a shell command in `.env`. Every order is logged to stdout too, so `pm2 logs`
+   is a live feed.
 
-Place a test order on the site → hermes alerts you within a second. 🎉
+Place a test order on the site → hermes WhatsApps you within a second. 🎉
+
+> Uses **Baileys** (unofficial WhatsApp) — ideal for low-volume alerts and can
+> post to a group. For a fully official channel, swap `hermes/whatsapp.js` for
+> Meta's WhatsApp Cloud API. Details in [hermes/README.md](hermes/README.md).
 
 > Realtime is enabled on the `orders` table by `schema.sql`
 > (`alter publication supabase_realtime add table public.orders;`).

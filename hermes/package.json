@@ -2,13 +2,17 @@
   "name": "tiao-hermes-listener",
   "version": "1.0.0",
   "private": true,
-  "description": "Runs on hermes (24/7 server): alerts on new tiao orders via Supabase Realtime",
+  "description": "Runs on hermes (24/7 server): alerts on new tiao orders via Supabase Realtime, sends WhatsApp",
   "main": "order-listener.js",
   "scripts": {
-    "start": "node order-listener.js"
+    "start": "node order-listener.js",
+    "wa-groups": "node list-groups.js"
   },
   "engines": { "node": ">=18" },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "@whiskeysockets/baileys": "^6.7.0",
+    "pino": "^9.0.0",
+    "qrcode-terminal": "^0.12.0"
   }
 }

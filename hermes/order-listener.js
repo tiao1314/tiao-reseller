@@ -5,7 +5,7 @@
  *  open ports, works behind NAT/firewalls.
  *
  *  Alerts go to whichever channel(s) you configure via env vars:
- *    - Telegram        (TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID)
+ *    - WhatsApp        (WHATSAPP_TO = your number or a group JID)  ← primary
  *    - Discord         (DISCORD_WEBHOOK_URL)
  *    - ntfy / push     (NTFY_URL)
  *    - Generic webhook (ALERT_WEBHOOK_URL)  ← point this at hermes' own alert endpoint
@@ -22,7 +22,7 @@ const { exec } = require('child_process');
 const {
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
-  TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
+  WHATSAPP_TO, WA_AUTH_DIR,
   DISCORD_WEBHOOK_URL,
   NTFY_URL,
   ALERT_WEBHOOK_URL,
@@ -37,6 +37,13 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
+
+// WhatsApp (self-hosted) — links via QR on first run, then sends order alerts.
+let whatsapp = null;
+if (WHATSAPP_TO) {
+  whatsapp = require('./whatsapp');
+  whatsapp.init(WA_AUTH_DIR).catch((e) => console.error('[whatsapp] init error:', e.message));
+}
 
 /* ---------- message formatting ---------- */
 function formatOrder(o) {
@@ -64,13 +71,11 @@ async function sendAlert(text, order) {
 
   const jobs = [];
 
-  if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
+  if (whatsapp && WHATSAPP_TO) {
     jobs.push(
-      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
-      }).then((r) => log('telegram', r.status))
+      whatsapp.send(WHATSAPP_TO, text)
+        .then(() => log('whatsapp', whatsapp.isReady() ? 'sent' : 'not-ready'))
+        .catch((e) => log('whatsapp', 'error: ' + e.message))
     );
   }
 

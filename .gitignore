@@ -3,3 +3,5 @@ node_modules/
 *.log
 .env
 .netlify/
+wa-auth/
+hermes/wa-auth/
