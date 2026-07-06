@@ -47,32 +47,29 @@ row-level security means the public anon key is safe to ship in the browser.
 2. Open **`/admin.html`** on your site → sign in. You'll see the dashboard.
    (The page is `noindex` and only readable by a signed-in user.)
 
-## 4. WhatsApp group notifications (CallMeBot)
-**On your phone (only you can do this):**
-1. Open https://www.callmebot.com/blog/free-api-whatsapp-messages/ and follow the
-   **group** instructions: add the CallMeBot number to your WhatsApp group and
-   send the activation phrase it gives you.
-2. It replies with your **apikey** and the group id/phone to use.
+## 4. Order alerts via hermes (your 24/7 server)
+Instead of a third-party service, your always-on server (**hermes**) runs a small
+listener that subscribes to Supabase in real time and alerts you on every new
+order. It connects **outbound only** — no ports to open.
 
-**Deploy the notifier (one-time), using the Supabase CLI:**
-```bash
-npm i -g supabase
-supabase login
-supabase link --project-ref <your-project-ref>
-supabase functions deploy notify-order --no-verify-jwt
-supabase secrets set CALLMEBOT_PHONE="<group id/phone>" CALLMEBOT_APIKEY="<apikey>"
-```
-**Fire it on every new order** — Supabase → **Database → Webhooks → Create**:
-- Table: `orders`  ·  Events: **Insert**
-- Type: **Supabase Edge Function** → `notify-order`
+1. Get your **service role** key: Supabase → **Project Settings → API** →
+   `service_role` (secret — server-only).
+2. Copy the [`hermes/`](hermes/) folder onto hermes and:
+   ```bash
+   cd hermes
+   cp .env.example .env     # add SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY + one alert channel
+   npm install
+   npm start                # look for: [realtime] SUBSCRIBED
+   ```
+3. Keep it running 24/7 with pm2 or systemd — see [hermes/README.md](hermes/README.md).
+4. Pick your alert channel in `.env` (Telegram, Discord, ntfy, a generic webhook
+   to hermes' own endpoint, or any shell command). Every order is also logged to
+   stdout, so `pm2 logs` / `journalctl` is a live feed.
 
-Place a test order on the site → your WhatsApp group should ping. 🎉
+Place a test order on the site → hermes alerts you within a second. 🎉
 
-> CallMeBot is a free, **unofficial** service — great to start. To go official
-> later, swap the `fetch(...)` in
-> [supabase/functions/notify-order/index.ts](supabase/functions/notify-order/index.ts)
-> for Twilio / WhatsApp Cloud API (they message a number, not a group) or a
-> Telegram group bot.
+> Realtime is enabled on the `orders` table by `schema.sql`
+> (`alter publication supabase_realtime add table public.orders;`).
 
 ## 5. Go live
 Push to GitHub → GitHub Pages serves the updated site. Share the store URL;
@@ -96,5 +93,6 @@ keep `/admin.html` for yourself.
 | `request.html`, `assets/js/request.js` | Customer order-request page (no payment) |
 | `admin.html`, `assets/js/admin.js`, `assets/css/admin.css` | Private admin dashboard |
 | `assets/js/db.js` | Shared Supabase client |
-| `supabase/schema.sql` | Tables + row-level security + cost seed |
-| `supabase/functions/notify-order/index.ts` | WhatsApp-on-new-order (CallMeBot) |
+| `supabase/schema.sql` | Tables + row-level security + cost seed + realtime |
+| `hermes/order-listener.js` | Runs on your server; alerts you on every new order |
+| `hermes/README.md` | How to run the listener 24/7 (pm2 / systemd) |

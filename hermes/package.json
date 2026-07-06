@@ -1,0 +1,14 @@
+{
+  "name": "tiao-hermes-listener",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Runs on hermes (24/7 server): alerts on new tiao orders via Supabase Realtime",
+  "main": "order-listener.js",
+  "scripts": {
+    "start": "node order-listener.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

@@ -99,7 +99,13 @@ insert into public.product_costs (product_id, brand, name, price, cost) values
 on conflict (product_id) do update
   set price = excluded.price, brand = excluded.brand, name = excluded.name;
 
+-- 5) REALTIME: let the hermes listener receive new orders ------
+--    Adds the orders table to Supabase's realtime publication so an
+--    INSERT is streamed to the listener running on your server.
+alter publication supabase_realtime add table public.orders;
+
 -- ============================================================
---  Optional: notify WhatsApp on new order via a Database Webhook
---  → see supabase/functions/notify-order and SUPABASE_SETUP.md
+--  Alerts: the hermes/ listener subscribes to the above realtime
+--  stream and notifies you on every new order. See hermes/README.md
+--  and SUPABASE_SETUP.md.
 -- ============================================================
