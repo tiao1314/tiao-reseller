@@ -65,7 +65,7 @@
           '<div class="drawer__head"><h3>YOUR CART</h3><button class="drawer__close" data-close aria-label="Close">✕</button></div>' +
           '<div class="drawer__items js-cart-items"></div>' +
           '<div class="drawer__foot"><div class="drawer__total"><span>Subtotal</span><strong class="js-cart-total">£0</strong></div>' +
-          '<a href="checkout.html" class="btn btn--solid btn--block js-checkout">CHECKOUT</a></div>' +
+          '<a href="request.html" class="btn btn--solid btn--block js-checkout">REQUEST ORDER</a></div>' +
         '</aside></div>' +
       // Wishlist drawer
       '<div class="drawer" data-drawer="wishlist"><div class="drawer__backdrop" data-close></div>' +
