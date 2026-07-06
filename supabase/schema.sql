@@ -34,11 +34,13 @@ create table if not exists public.product_costs (
 alter table public.orders         enable row level security;
 alter table public.product_costs  enable row level security;
 
--- Anyone (anon) may CREATE an order request...
+-- Anyone may CREATE an order request. Uses role `public` (covers anon +
+-- the new sb_publishable_ API keys) so the insert is never blocked by RLS.
 drop policy if exists "anon can insert orders" on public.orders;
-create policy "anon can insert orders"
+drop policy if exists "public can insert orders" on public.orders;
+create policy "public can insert orders"
   on public.orders for insert
-  to anon, authenticated
+  to public
   with check (true);
 
 -- ...but only signed-in admins may READ / UPDATE / DELETE them.
