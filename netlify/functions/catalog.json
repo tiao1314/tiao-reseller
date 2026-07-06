@@ -1,0 +1,152 @@
+{
+  "b1": {
+    "brand": "SAINT LAURENT",
+    "name": "Loulou Medium Quilted Leather",
+    "price": 1980
+  },
+  "b2": {
+    "brand": "CHANEL",
+    "name": "Classic Flap Medium Caviar",
+    "price": 8900
+  },
+  "b3": {
+    "brand": "OFF-WHITE",
+    "name": "Binder Clip Jitney Bag",
+    "price": 1240
+  },
+  "b4": {
+    "brand": "LOUIS VUITTON",
+    "name": "Neverfull MM Monogram Tote",
+    "price": 1650
+  },
+  "b5": {
+    "brand": "DIOR",
+    "name": "Saddle Bag Oblique Canvas",
+    "price": 2450
+  },
+  "b6": {
+    "brand": "HERMÈS",
+    "name": "Kelly 28 Togo Leather",
+    "price": 21500
+  },
+  "b7": {
+    "brand": "GUCCI",
+    "name": "GG Marmont Small Shoulder",
+    "price": 1290
+  },
+  "b8": {
+    "brand": "PRADA",
+    "name": "Re-Edition 2005 Nylon",
+    "price": 1150
+  },
+  "b9": {
+    "brand": "BOTTEGA VENETA",
+    "name": "Jodie Mini Intrecciato",
+    "price": 2680
+  },
+  "b10": {
+    "brand": "BALENCIAGA",
+    "name": "Hourglass Small Top Handle",
+    "price": 1990
+  },
+  "s1": {
+    "brand": "NIKE × OFF-WHITE",
+    "name": "Air Jordan 1 \"The Ten\"",
+    "price": 2200
+  },
+  "s2": {
+    "brand": "BALENCIAGA",
+    "name": "Triple S Trainers Grey",
+    "price": 720
+  },
+  "s3": {
+    "brand": "YEEZY",
+    "name": "Boost 350 V2 \"Zebra\"",
+    "price": 340
+  },
+  "s4": {
+    "brand": "DIOR",
+    "name": "B23 High-Top Oblique",
+    "price": 980
+  },
+  "s5": {
+    "brand": "CHRISTIAN LOUBOUTIN",
+    "name": "So Kate 120 Patent",
+    "price": 640
+  },
+  "s6": {
+    "brand": "NIKE",
+    "name": "Dunk Low \"Panda\"",
+    "price": 180
+  },
+  "s7": {
+    "brand": "NEW BALANCE",
+    "name": "550 White Green",
+    "price": 210
+  },
+  "s8": {
+    "brand": "GUCCI",
+    "name": "Rhyton Logo Leather",
+    "price": 720
+  },
+  "w1": {
+    "brand": "ROLEX",
+    "name": "Datejust 41 Oyster Steel",
+    "price": 9850
+  },
+  "w2": {
+    "brand": "AUDEMARS PIGUET",
+    "name": "Royal Oak 41 Steel",
+    "price": 42500
+  },
+  "w3": {
+    "brand": "PATEK PHILIPPE",
+    "name": "Nautilus 5711 Blue Dial",
+    "price": 98000
+  },
+  "w4": {
+    "brand": "OMEGA",
+    "name": "Speedmaster Moonwatch",
+    "price": 5400
+  },
+  "w5": {
+    "brand": "CARTIER",
+    "name": "Santos Medium Steel",
+    "price": 6200
+  },
+  "w6": {
+    "brand": "ROLEX",
+    "name": "Submariner Date Black",
+    "price": 14200
+  },
+  "a1": {
+    "brand": "GUCCI",
+    "name": "GG Marmont Leather Belt",
+    "price": 420
+  },
+  "a2": {
+    "brand": "SAINT LAURENT",
+    "name": "Monogram Cardholder",
+    "price": 260
+  },
+  "a3": {
+    "brand": "CHANEL",
+    "name": "CC Logo Sunglasses",
+    "price": 540
+  },
+  "a4": {
+    "brand": "HERMÈS",
+    "name": "Silk Twill Scarf 90cm",
+    "price": 480
+  },
+  "a5": {
+    "brand": "LOUIS VUITTON",
+    "name": "Monogram Bracelet",
+    "price": 390
+  },
+  "a6": {
+    "brand": "DIOR",
+    "name": "CD Icon Baseball Cap",
+    "price": 380
+  }
+}
