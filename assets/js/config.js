@@ -11,8 +11,8 @@ window.TIAO_CONFIG = {
   // Supabase — your project's URL + PUBLIC anon key (safe to expose; row-level
   // security protects the data). Create a project at https://supabase.com, then
   // Project Settings → API. See SUPABASE_SETUP.md for the full walkthrough.
-  SUPABASE_URL: '',
-  SUPABASE_ANON_KEY: '',
+  SUPABASE_URL: 'https://lnzhsjzwqungawuzqfzt.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_T59iOirURxzMduB-AqjTSQ_LHPkugqR',
 
   // Currency + the email of the admin (used only for display in the panel).
   CURRENCY: 'GBP',
