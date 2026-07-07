@@ -479,7 +479,25 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .co-line__price { font-size: 14px; font-weight: 700; }
 .checkout__total { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; font-size: 15px; }
 .checkout__total strong { font-size: 22px; }
+.checkout__lead { font-size: 14px; color: var(--ink-soft); max-width: 620px; margin: -14px 0 30px; line-height: 1.6; }
 .checkout__note { font-size: 13px; color: var(--ink-soft); margin-bottom: 20px; }
+
+/* ----- order request form ----- */
+.req-form { display: flex; flex-direction: column; gap: 16px; }
+.req-form label {
+  display: flex; flex-direction: column; gap: 7px;
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft);
+}
+.req-form input, .req-form textarea {
+  font-family: inherit; font-size: 15px; font-weight: 400; letter-spacing: normal; text-transform: none;
+  color: var(--ink); background: var(--paper);
+  border: 1px solid var(--line); border-radius: 2px; padding: 13px 15px; width: 100%;
+  transition: border-color .2s;
+}
+.req-form input::placeholder, .req-form textarea::placeholder { color: #b3b1ab; }
+.req-form input:focus, .req-form textarea:focus { outline: none; border-color: var(--ink); }
+.req-form textarea { resize: vertical; min-height: 92px; line-height: 1.5; }
+.req-form .btn { margin-top: 8px; }
 .checkout__fine { font-size: 11px; color: var(--ink-soft); margin-top: 18px; }
 .checkout__empty { color: var(--ink-soft); font-size: 14px; padding: 16px 0; }
 .checkout__empty a { text-decoration: underline; }
