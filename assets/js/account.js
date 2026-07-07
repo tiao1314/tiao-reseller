@@ -69,8 +69,7 @@
     var body = el('acctBody');
     if (!auth || !auth.isReady()) { body.innerHTML = '<p class="muted-note">Accounts aren’t connected yet.</p>'; return; }
     if (!auth.isLoggedIn()) {
-      body.innerHTML = '<div class="acct-empty"><p>Please sign in to view your orders.</p>' +
-        '<button class="btn btn--solid" data-open="account">SIGN IN</button></div>';
+      renderGuest(body);
       return;
     }
     var u = auth.getUser();
@@ -87,6 +86,59 @@
         }
         body.innerHTML = '<p class="muted-note">Couldn’t load your orders: ' + esc(err.message) + '</p>';
       });
+  }
+
+  // ---- guest tracking (no account) ----
+  function renderGuest(body) {
+    body.innerHTML =
+      '<div class="acct-signin"><p>Signed up? <button class="link-inline" data-open="account">Sign in</button> to see all your orders.</p></div>' +
+      '<div class="acct-track"><h2>Track a guest order</h2>' +
+        '<p class="muted-note">Ordered without an account? Enter the reference from your confirmation and your email.</p>' +
+        '<form class="req-form acct-track__form" id="guestForm">' +
+          '<label>Reference<input type="text" name="ref" placeholder="TIAO-XXXXXX" required /></label>' +
+          '<label>Email<input type="email" name="email" placeholder="Email used at checkout" required /></label>' +
+          '<button type="submit" class="btn btn--solid btn--block" id="guestBtn">CHECK STATUS</button>' +
+        '</form>' +
+        '<div id="guestResult"></div>' +
+      '</div>';
+    document.getElementById('guestForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var f = e.target, btn = document.getElementById('guestBtn'), out = document.getElementById('guestResult');
+      btn.disabled = true; btn.textContent = 'CHECKING…'; out.innerHTML = '';
+      fetch(REST + 'rpc/track_order', {
+        method: 'POST',
+        headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_ref: f.ref.value.trim(), p_email: f.email.value.trim() })
+      }).then(function (r) { return r.json(); }).then(function (rows) {
+        btn.disabled = false; btn.textContent = 'CHECK STATUS';
+        if (!Array.isArray(rows) || !rows.length) {
+          out.innerHTML = '<p class="muted-note">No order found for that reference &amp; email. Double-check both and try again.</p>';
+          return;
+        }
+        out.innerHTML = orderCard(rows[0], f.ref.value.trim().toUpperCase());
+      }).catch(function (err) {
+        btn.disabled = false; btn.textContent = 'CHECK STATUS';
+        out.innerHTML = '<p class="muted-note">Couldn’t check right now: ' + esc(err.message) + '</p>';
+      });
+    });
+  }
+
+  function orderCard(o, ref) {
+    var meta = STATUS[o.status] || STATUS.pending;
+    var items = (Array.isArray(o.items) ? o.items : []).map(function (it) {
+      return '<div class="co-line"><div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
+        '<span class="co-line__name">' + esc(it.name) + '</span></div><span class="co-line__price">' + money(it.price) + '</span></div>';
+    }).join('');
+    var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return '<article class="acct-order" style="margin-top:20px">' +
+      '<div class="acct-order__top"><div><span class="acct-order__ref">#' + esc(ref) + '</span>' +
+        '<span class="acct-order__date">' + date + '</span></div>' +
+        '<span class="adm-badge acct-badge acct-badge--' + meta.cls + '">' + esc(meta.label) + '</span></div>' +
+      '<p class="acct-order__note">' + esc(meta.note) + '</p>' +
+      '<div class="acct-order__items">' + items +
+        '<div class="checkout__total"><span>Estimated total</span><strong>' + money(o.subtotal) + '</strong></div></div>' +
+      (o.tracking_url ? '<a class="btn btn--outline acct-track-btn" href="' + esc(o.tracking_url) + '" target="_blank" rel="noopener">TRACK PARCEL →</a>' : '') +
+    '</article>';
   }
 
   if (window.TiaoAuth) start(); else window.addEventListener('DOMContentLoaded', start);

@@ -35,14 +35,16 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = document.getElementById('reqSubmit');
+      var refCode = 'TIAO-' + Math.random().toString(36).slice(2, 8).toUpperCase();
       var order = {
         customer_name: form.name.value.trim(),
         customer_email: form.email.value.trim(),
         customer_phone: form.phone.value.trim(),
         note: form.note.value.trim(),
-        items: items.map(function (p) { return { id: p.id, brand: p.brand, name: p.name, price: p.price }; }),
+        items: items.map(function (p) { return { id: p.id, brand: p.brand, name: p.name, price: p.price, img: p.img }; }),
         subtotal: total,
-        status: 'pending'
+        status: 'pending',
+        ref_code: refCode
       };
 
       var CFG = window.TIAO_CONFIG || {};
@@ -106,6 +108,9 @@
           '<div class="checkout__tick">✓</div>' +
           '<h2>Request received' + (order.customer_name ? ', ' + esc(order.customer_name.split(' ')[0]) : '') + '!</h2>' +
           '<p class="checkout__done-sub">Thanks — your request is in. We’ll reach out at <strong>' + esc(contact) + '</strong> to confirm.</p>' +
+          '<div class="checkout__refblock"><span class="checkout__reflabel">Your reference</span>' +
+            '<strong class="checkout__refcode">' + esc(order.ref_code) + '</strong>' +
+            '<span class="checkout__refhint">Save this — track your order any time at <a href="account.html">Track My Order</a> using this code &amp; your email.</span></div>' +
           '<div class="checkout__recap">' + recap +
             '<div class="checkout__total"><span>Estimated total</span><strong>' + money(order.subtotal) + '</strong></div>' +
           '</div>' +
