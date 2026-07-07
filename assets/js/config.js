@@ -12,7 +12,7 @@ window.TIAO_CONFIG = {
   // security protects the data). Create a project at https://supabase.com, then
   // Project Settings → API. See SUPABASE_SETUP.md for the full walkthrough.
   SUPABASE_URL: 'https://lnzhsjzwqungawuzqfzt.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_T59iOirURxzMduB-AqjTSQ_LHPkugqR',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxuemhzanp3cXVuZ2F3dXpxZnp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNjg2ODEsImV4cCI6MjA5ODk0NDY4MX0.PZETP8oPRUzj8M_rQ91R0hpx3BOxZJsugXlepe9u9Ng',
 
   // Currency + the email of the admin (used only for display in the panel).
   CURRENCY: 'GBP',

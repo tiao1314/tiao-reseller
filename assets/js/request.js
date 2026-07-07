@@ -45,23 +45,45 @@
         status: 'pending'
       };
 
-      // Graceful path when Supabase isn't connected yet.
-      if (!window.TIAO_DB_READY) {
+      var CFG = window.TIAO_CONFIG || {};
+      // Graceful path when Supabase isn't configured yet.
+      if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) {
         showMsg('info', 'Order captured locally (demo). Connect Supabase to send real order requests — see SUPABASE_SETUP.md.');
         finish(order, null);
         return;
       }
 
+      // Submit via a direct REST call with the apikey header ONLY. We avoid the
+      // Supabase JS client here because it always adds an Authorization: Bearer
+      // header, which this project rejects for anonymous inserts (401). apikey
+      // alone resolves to the anon role and passes the "public can insert" policy.
       btn.disabled = true; btn.textContent = 'SENDING…';
-      window.TIAO_DB.from('orders').insert(order).select().single()
-        .then(function (res) {
-          if (res.error) throw res.error;
-          finish(order, res.data);
-        })
-        .catch(function (err) {
-          btn.disabled = false; btn.textContent = 'SEND ORDER REQUEST';
-          showMsg('err', 'Could not send: ' + (err.message || 'please try again.'));
+
+      function attempt(n) {
+        return fetch(CFG.SUPABASE_URL + '/rest/v1/orders', {
+          method: 'POST',
+          headers: {
+            'apikey': CFG.SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(order)
+        }).then(function (res) {
+          return res.json().catch(function () { return null; }).then(function (data) {
+            if (!res.ok) {
+              // one silent retry on a transient failure so we never lose an order
+              if (n < 2) return new Promise(function (r) { setTimeout(r, 700); }).then(function () { return attempt(n + 1); });
+              throw new Error((data && data.message) || ('HTTP ' + res.status));
+            }
+            finish(order, Array.isArray(data) ? data[0] : data);
+          });
         });
+      }
+
+      attempt(1).catch(function (err) {
+        btn.disabled = false; btn.textContent = 'SEND ORDER REQUEST';
+        showMsg('err', 'Could not send: ' + (err.message || 'please try again.'));
+      });
     });
 
     function finish(order, saved) {
