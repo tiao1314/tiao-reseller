@@ -356,6 +356,9 @@
     document.addEventListener('tiao:auth', function () {
       syncStore(window.TiaoAuth.getUser()); renderBadges(); renderAccount(); toast('Signed in');
     });
+    document.addEventListener('tiao:auth-error', function (e) {
+      toast('Sign-in failed: ' + ((e.detail && e.detail.message) || 'please try again'));
+    });
 
     renderBadges();
   }

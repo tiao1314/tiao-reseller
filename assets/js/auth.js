@@ -5,7 +5,27 @@
   'use strict';
   var CFG = window.TIAO_CONFIG || {};
   var AUTH = (CFG.SUPABASE_URL || '') + '/auth/v1/';
-  var K = { t: 'tiao_cust_token', r: 'tiao_cust_refresh', u: 'tiao_cust_user' };
+  var K = { t: 'tiao_cust_token', r: 'tiao_cust_refresh', u: 'tiao_cust_user', v: 'tiao_pkce_verifier' };
+
+  // ---- PKCE helpers (for social login) ----
+  function b64url(bytes) {
+    var arr = new Uint8Array(bytes), s = '';
+    for (var i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function randomVerifier() { return b64url(crypto.getRandomValues(new Uint8Array(32)).buffer); }
+  function challengeFrom(verifier) {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)).then(function (h) { return b64url(h); });
+  }
+  function parseParams(str) {
+    var out = {};
+    (str || '').replace(/^[#?]/, '').split('&').forEach(function (kv) {
+      if (!kv) return; var p = kv.split('=');
+      out[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || '').replace(/\+/g, ' '));
+    });
+    return out;
+  }
+  function cleanUrl() { try { history.replaceState(null, '', window.location.pathname); } catch (e) {} }
 
   function saveSession(d) {
     if (!d || !d.access_token) return false;
@@ -47,12 +67,16 @@
       });
     },
 
-    // Kick off a social login (google / discord). Redirects away and comes
-    // back to this same page with the session in the URL hash.
+    // Kick off a social login (google / discord) using the PKCE code flow.
     oauth: function (provider) {
-      var redirect = window.location.href.split('#')[0];
-      window.location.href = AUTH + 'authorize?provider=' + encodeURIComponent(provider) +
-        '&redirect_to=' + encodeURIComponent(redirect);
+      var verifier = randomVerifier();
+      localStorage.setItem(K.v, verifier);
+      var redirect = window.location.href.split('#')[0].split('?')[0];  // clean page URL
+      challengeFrom(verifier).then(function (challenge) {
+        window.location.href = AUTH + 'authorize?provider=' + encodeURIComponent(provider) +
+          '&redirect_to=' + encodeURIComponent(redirect) +
+          '&code_challenge=' + challenge + '&code_challenge_method=s256';
+      });
     },
 
     signOut: function () { clear(); },
@@ -80,24 +104,55 @@
 
   window.TiaoAuth = TiaoAuth;
 
-  // On page load, complete a social login if we came back with tokens in the URL.
-  function handleCallback() {
-    var h = window.location.hash || '';
-    if (h.indexOf('access_token=') === -1) return Promise.resolve(false);
-    var params = {};
-    h.replace(/^#/, '').split('&').forEach(function (kv) {
-      var p = kv.split('='); params[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || '');
-    });
-    if (!params.access_token) return Promise.resolve(false);
+  function finishLogin(session) {
+    // session may lack a user object (code exchange returns it; hash flow doesn't)
+    if (session.user && session.user.id) {
+      saveSession(session);
+      cleanUrl();
+      document.dispatchEvent(new CustomEvent('tiao:auth', { detail: { user: { id: session.user.id, email: session.user.email } } }));
+      return Promise.resolve(true);
+    }
     return fetch(AUTH + 'user', {
-      headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + params.access_token }
+      headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + session.access_token }
     }).then(function (r) { return r.ok ? r.json() : null; }).then(function (user) {
-      if (!user || !user.id) return false;
-      saveSession({ access_token: params.access_token, refresh_token: params.refresh_token, user: user });
-      try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+      if (!user || !user.id) throw new Error('Could not load your profile');
+      saveSession({ access_token: session.access_token, refresh_token: session.refresh_token, user: user });
+      cleanUrl();
       document.dispatchEvent(new CustomEvent('tiao:auth', { detail: { user: { id: user.id, email: user.email } } }));
       return true;
-    }).catch(function () { return false; });
+    });
+  }
+
+  function fail(message) {
+    cleanUrl();
+    document.dispatchEvent(new CustomEvent('tiao:auth-error', { detail: { message: message } }));
+    return false;
+  }
+
+  // On page load, complete a social login if we came back from the provider.
+  function handleCallback() {
+    var q = parseParams(window.location.search), h = parseParams(window.location.hash);
+    var err = q.error_description || q.error || h.error_description || h.error;
+    if (err) return Promise.resolve(fail(err));
+
+    // Implicit flow (session in the hash)
+    if (h.access_token) return finishLogin(h).catch(function (e) { return fail(e.message); });
+
+    // PKCE code flow (?code=...) — exchange the code using our stored verifier
+    if (q.code) {
+      var verifier = localStorage.getItem(K.v);
+      if (!verifier) return Promise.resolve(fail('Login session expired — please try again.'));
+      return fetch(AUTH + 'token?grant_type=pkce', {
+        method: 'POST',
+        headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auth_code: q.code, code_verifier: verifier })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        localStorage.removeItem(K.v);
+        if (!d.access_token) throw new Error(msg(d));
+        return finishLogin(d);
+      }).catch(function (e) { return fail(e.message || 'Sign-in failed'); });
+    }
+    return Promise.resolve(false);
   }
   window.TIAO_AUTH_READY = handleCallback();
 })();
