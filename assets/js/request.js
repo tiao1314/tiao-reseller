@@ -71,8 +71,8 @@
         }).then(function (res) {
           return res.json().catch(function () { return null; }).then(function (data) {
             if (!res.ok) {
-              // one silent retry on a transient failure so we never lose an order
-              if (n < 2) return new Promise(function (r) { setTimeout(r, 700); }).then(function () { return attempt(n + 1); });
+              // silent retries on transient failures so we never lose an order
+              if (n < 4) return new Promise(function (r) { setTimeout(r, 600 * n); }).then(function () { return attempt(n + 1); });
               throw new Error((data && data.message) || ('HTTP ' + res.status));
             }
             finish(order, Array.isArray(data) ? data[0] : data);
