@@ -370,5 +370,158 @@
     apiPatch('orders?id=eq.' + encodeURIComponent(id), patch).catch(function (err) { console.error(err); loadData(); });
   }
 
+  /* ================= LISTINGS ================= */
+  var CATEGORIES = ['bags', 'shoes', 'watches', 'accessories'];
+  var BADGES = ['ON HAND', 'NEW IN', 'AUTHENTICATED'];
+  var products = [];
+  var listingsLoaded = false;
+
+  var tabsWired = false;
+  function wireTabs() {
+    if (tabsWired) return; tabsWired = true;
+    document.querySelectorAll('.adm-tab').forEach(function (t) {
+      t.addEventListener('click', function () { switchView(t.dataset.view); });
+    });
+    el('addListingBtn').addEventListener('click', function () { openListingForm(null); });
+    document.getElementById('listingModal').addEventListener('click', function (e) {
+      if (e.target.hasAttribute('data-lclose')) closeListingModal();
+    });
+  }
+
+  function switchView(v) {
+    el('viewDashboard').hidden = v !== 'dashboard';
+    el('viewListings').hidden = v !== 'listings';
+    document.querySelectorAll('.adm-tab').forEach(function (t) { t.classList.toggle('is-active', t.dataset.view === v); });
+    if (v === 'listings' && !listingsLoaded) loadListings();
+  }
+
+  function loadListings() {
+    listingsLoaded = true;
+    el('listingsGrid').innerHTML = '<p class="adm-empty">Loading…</p>';
+    apiGet('products?select=*&order=sort_order.asc,created_at.desc').then(function (rows) {
+      products = Array.isArray(rows) ? rows : [];
+      renderListings();
+    }).catch(function (err) {
+      el('listingsGrid').innerHTML = '<p class="adm-empty">Couldn’t load listings: ' + esc(err.message) + '</p>';
+    });
+  }
+
+  function renderListings() {
+    var grid = el('listingsGrid');
+    if (!products.length) { grid.innerHTML = '<p class="adm-empty">No listings yet — click “Add listing”.</p>'; return; }
+    grid.innerHTML = products.map(function (p) {
+      return '<div class="adm-listing' + (p.active ? '' : ' is-off') + '">' +
+        '<div class="adm-listing__img" style="background-image:url(\'' + esc(p.img || '') + '\')">' +
+          (p.active ? '' : '<span class="adm-listing__badge">Hidden</span>') + '</div>' +
+        '<div class="adm-listing__body">' +
+          '<span class="adm-listing__brand">' + esc(p.brand) + '</span>' +
+          '<span class="adm-listing__name">' + esc(p.name) + '</span>' +
+          '<span class="adm-listing__meta">' + esc(p.category) + ' · ' + money(p.price) +
+            ' <span class="adm-muted">(cost ' + money(p.cost) + ')</span></span>' +
+        '</div>' +
+        '<div class="adm-listing__actions">' +
+          '<button class="adm-mini" data-ledit="' + esc(p.id) + '">Edit</button>' +
+          '<button class="adm-mini adm-mini--no" data-ldel="' + esc(p.id) + '">Delete</button>' +
+        '</div></div>';
+    }).join('');
+    grid.querySelectorAll('[data-ledit]').forEach(function (b) {
+      b.addEventListener('click', function () { openListingForm(products.find(function (p) { return String(p.id) === b.dataset.ledit; })); });
+    });
+    grid.querySelectorAll('[data-ldel]').forEach(function (b) {
+      b.addEventListener('click', function () { deleteListing(b.dataset.ldel); });
+    });
+  }
+
+  function openListingForm(p) {
+    var edit = !!p; p = p || {};
+    var opt = function (arr, sel) { return arr.map(function (v) { return '<option' + (v === sel ? ' selected' : '') + '>' + v + '</option>'; }).join(''); };
+    el('listingModalBody').innerHTML =
+      '<button class="adm-lmodal__close" data-lclose>✕</button>' +
+      '<h3>' + (edit ? 'Edit listing' : 'Add listing') + '</h3>' +
+      '<form id="listingForm" class="adm-lform">' +
+        '<div class="adm-lupload"><div class="adm-lupload__preview" id="lPreview"' + (p.img ? ' style="background-image:url(\'' + esc(p.img) + '\')"' : '') + '></div>' +
+          '<label class="adm-btn adm-btn--ghost adm-lupload__btn">Upload photo<input type="file" id="lImage" accept="image/*" hidden></label>' +
+          '<span class="adm-muted adm-sm" id="lUploadMsg">JPG/PNG, or paste a URL below</span></div>' +
+        '<label>Image URL<input name="img" value="' + esc(p.img || '') + '" placeholder="https://…"></label>' +
+        '<div class="adm-lrow"><label>Category<select name="category">' + opt(CATEGORIES, p.category) + '</select></label>' +
+          '<label>Badge<select name="badge">' + opt(BADGES, p.badge) + '</select></label></div>' +
+        '<label>Brand<input name="brand" value="' + esc(p.brand || '') + '" required placeholder="e.g. CHANEL"></label>' +
+        '<label>Name<input name="name" value="' + esc(p.name || '') + '" required placeholder="e.g. Classic Flap Medium"></label>' +
+        '<div class="adm-lrow"><label>Price £<input name="price" type="number" min="0" step="1" value="' + (p.price != null ? p.price : '') + '" required></label>' +
+          '<label>Your cost £<input name="cost" type="number" min="0" step="1" value="' + (p.cost != null ? p.cost : '') + '"></label></div>' +
+        '<label>Condition<input name="condition" value="' + esc(p.condition || 'Pre-Owned · Excellent') + '"></label>' +
+        '<div class="adm-lrow adm-lrow--checks">' +
+          '<label class="adm-check"><input type="checkbox" name="is_new"' + (p.is_new ? ' checked' : '') + '> Mark “new”</label>' +
+          '<label class="adm-check"><input type="checkbox" name="active"' + (edit ? (p.active ? ' checked' : '') : ' checked') + '> Visible in store</label>' +
+        '</div>' +
+        '<p class="adm-lmsg" id="lMsg" hidden></p>' +
+        '<div class="adm-lactions"><button type="submit" class="adm-btn adm-btn--solid" id="lSave">' + (edit ? 'SAVE CHANGES' : 'ADD LISTING') + '</button></div>' +
+      '</form>';
+    el('listingModal').hidden = false;
+
+    var form = el('listingForm'), fileInput = el('lImage'), preview = el('lPreview');
+    fileInput.addEventListener('change', function () {
+      var f = fileInput.files[0]; if (!f) return;
+      el('lUploadMsg').textContent = 'Uploading…';
+      uploadImage(f).then(function (url) {
+        form.img.value = url; preview.style.backgroundImage = 'url(\'' + url + '\')';
+        el('lUploadMsg').textContent = 'Uploaded ✓';
+      }).catch(function (err) { el('lUploadMsg').textContent = 'Upload failed: ' + err.message; });
+    });
+    form.img.addEventListener('input', function () { preview.style.backgroundImage = form.img.value ? 'url(\'' + form.img.value + '\')' : ''; });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var btn = el('lSave'), msg = el('lMsg');
+      var data = {
+        category: form.category.value, brand: form.brand.value.trim(), name: form.name.value.trim(),
+        price: Number(form.price.value) || 0, cost: Number(form.cost.value) || 0,
+        condition: form.condition.value.trim(), badge: form.badge.value,
+        is_new: form.is_new.checked, img: form.img.value.trim(), active: form.active.checked
+      };
+      btn.disabled = true; btn.textContent = 'SAVING…'; msg.hidden = true;
+      saveListing(data, edit ? p.id : null).then(function () {
+        closeListingModal(); listingsLoaded = false; loadListings();
+      }).catch(function (err) {
+        btn.disabled = false; btn.textContent = edit ? 'SAVE CHANGES' : 'ADD LISTING';
+        msg.hidden = false; msg.textContent = err.message || 'Could not save';
+      });
+    });
+  }
+
+  function closeListingModal() { el('listingModal').hidden = true; }
+
+  function saveListing(data, id) {
+    if (id) return apiPatch('products?id=eq.' + encodeURIComponent(id), data);
+    return request('POST', 'products', { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, JSON.stringify(data));
+  }
+
+  function deleteListing(id) {
+    if (!window.confirm('Delete this listing? This cannot be undone.')) return;
+    request('DELETE', 'products?id=eq.' + encodeURIComponent(id)).then(function () {
+      products = products.filter(function (p) { return String(p.id) !== String(id); });
+      renderListings();
+    }).catch(function (err) { alert('Delete failed: ' + err.message); });
+  }
+
+  // Upload an image to Supabase Storage; refresh the token once on 401.
+  function uploadImage(file, retried) {
+    var safe = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var url = CFG.SUPABASE_URL + '/storage/v1/object/product-images/' + encodeURIComponent(safe);
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
+      body: file
+    }).then(function (r) {
+      if (r.status === 401 && !retried) { return refreshSession().then(function () { return uploadImage(file, true); }); }
+      if (!r.ok) return r.text().then(function (t) { throw new Error(t || ('HTTP ' + r.status)); });
+      return CFG.SUPABASE_URL + '/storage/v1/object/public/product-images/' + encodeURIComponent(safe);
+    });
+  }
+
+  // hook tab wiring into showApp (runs after login)
+  var _showApp = showApp;
+  showApp = function () { _showApp(); wireTabs(); };
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

@@ -47,5 +47,6 @@
     apply();
   }
 
-  if (window.UI) init(); else window.addEventListener('DOMContentLoaded', init);
+  function boot() { (window.TIAO_CATALOG_READY || Promise.resolve()).then(init); }
+  if (window.UI) boot(); else window.addEventListener('DOMContentLoaded', boot);
 })();

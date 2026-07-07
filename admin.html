@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/admin.css?v=7" />
+  <link rel="stylesheet" href="assets/css/admin.css?v=8" />
 </head>
 <body class="adm" data-palette="#2a78d6,#1baf7a">
 
@@ -47,41 +47,64 @@
       </div>
     </header>
 
+    <nav class="adm-tabs">
+      <button class="adm-tab is-active" data-view="dashboard">Dashboard</button>
+      <button class="adm-tab" data-view="listings">Listings</button>
+    </nav>
+
     <main class="adm-main">
-      <!-- Stat tiles -->
-      <section class="adm-tiles" id="tiles"></section>
+      <div id="viewDashboard">
+        <!-- Stat tiles -->
+        <section class="adm-tiles" id="tiles"></section>
 
-      <!-- Chart -->
-      <section class="adm-card adm-chart">
-        <div class="adm-card__head">
-          <h2>Revenue &amp; profit</h2>
-          <div class="adm-legend" id="chartLegend"></div>
-        </div>
-        <div id="chart" class="adm-chart__body"></div>
-        <p class="adm-muted adm-chart__foot">Confirmed orders only (accepted, shipped or delivered).</p>
-      </section>
+        <!-- Chart -->
+        <section class="adm-card adm-chart">
+          <div class="adm-card__head">
+            <h2>Revenue &amp; profit</h2>
+            <div class="adm-legend" id="chartLegend"></div>
+          </div>
+          <div id="chart" class="adm-chart__body"></div>
+          <p class="adm-muted adm-chart__foot">Confirmed orders only (accepted, shipped or delivered).</p>
+        </section>
 
-      <!-- Orders -->
-      <section class="adm-card">
-        <div class="adm-card__head">
-          <h2>Orders</h2>
-          <div class="adm-filters" id="statusFilters"></div>
-        </div>
-        <div class="adm-table-wrap">
-          <table class="adm-table" id="ordersTable">
-            <thead><tr>
-              <th>Date</th><th>Customer</th><th>Items</th><th class="num">Total</th>
-              <th class="num">Profit</th><th>Status</th><th>Fulfilment</th>
-            </tr></thead>
-            <tbody id="ordersBody"></tbody>
-          </table>
-          <p class="adm-empty" id="ordersEmpty" hidden>No orders yet.</p>
-        </div>
-      </section>
+        <!-- Orders -->
+        <section class="adm-card">
+          <div class="adm-card__head">
+            <h2>Orders</h2>
+            <div class="adm-filters" id="statusFilters"></div>
+          </div>
+          <div class="adm-table-wrap">
+            <table class="adm-table" id="ordersTable">
+              <thead><tr>
+                <th>Date</th><th>Customer</th><th>Items</th><th class="num">Total</th>
+                <th class="num">Profit</th><th>Status</th><th>Fulfilment</th>
+              </tr></thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+            <p class="adm-empty" id="ordersEmpty" hidden>No orders yet.</p>
+          </div>
+        </section>
+      </div>
+
+      <div id="viewListings" hidden>
+        <section class="adm-card">
+          <div class="adm-card__head">
+            <h2>Listings</h2>
+            <button class="adm-btn adm-btn--solid" id="addListingBtn">+ Add listing</button>
+          </div>
+          <div id="listingsGrid" class="adm-listings"></div>
+        </section>
+      </div>
     </main>
   </div>
 
+  <!-- Add/edit listing modal (filled by JS) -->
+  <div class="adm-lmodal" id="listingModal" hidden>
+    <div class="adm-lmodal__backdrop" data-lclose></div>
+    <div class="adm-lmodal__panel" id="listingModalBody"></div>
+  </div>
+
   <script src="assets/js/config.js?v=6"></script>
-  <script src="assets/js/admin.js?v=7"></script>
+  <script src="assets/js/admin.js?v=8"></script>
 </body>
 </html>
