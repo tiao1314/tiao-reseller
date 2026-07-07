@@ -204,54 +204,72 @@
       return;
     }
 
-    var W = Math.max(host.clientWidth || 720, 320), H = 260;
-    var m = { t: 16, r: 54, b: 34, l: 56 };
+    var W = Math.max(host.clientWidth || 760, 320), H = 300;
+    var m = { t: 24, r: 66, b: 40, l: 64 };
     var iw = W - m.l - m.r, ih = H - m.t - m.b;
     var maxV = Math.max.apply(null, days.map(function (d) { return byDay[d].rev; }).concat([1]));
-    // round max up to a nice number
     var step = Math.pow(10, Math.floor(Math.log10(maxV)));
-    var niceMax = Math.ceil(maxV / step) * step;
+    var niceMax = Math.ceil(maxV / step) * step || 1;
 
-    var xAt = function (i) { return days.length === 1 ? m.l + iw / 2 : m.l + (iw * i / (days.length - 1)); };
+    var single = days.length === 1;
+    var xAt = function (i) { return single ? m.l + iw / 2 : m.l + (iw * i / (days.length - 1)); };
     var yAt = function (v) { return m.t + ih - (ih * v / niceMax); };
+    var baseY = m.t + ih;
 
-    function path(key) {
-      return days.map(function (d, i) { return (i ? 'L' : 'M') + xAt(i).toFixed(1) + ' ' + yAt(byDay[d][key]).toFixed(1); }).join(' ');
+    // Build point lists. For a single day we render a flat line across the full
+    // width so it clearly reads as a level, not a lone dot.
+    function coords(key) {
+      if (single) {
+        var y = yAt(byDay[days[0]][key]);
+        return [{ x: m.l, y: y }, { x: xAt(0), y: y, mark: true }, { x: W - m.r, y: y }];
+      }
+      return days.map(function (d, i) { return { x: xAt(i), y: yAt(byDay[d][key]), mark: true, i: i }; });
     }
-    function markers(key, cls) {
-      return days.map(function (d, i) {
-        return '<circle class="adm-dot ' + cls + '" data-i="' + i + '" cx="' + xAt(i).toFixed(1) + '" cy="' + yAt(byDay[d][key]).toFixed(1) + '" r="4.5"/>';
+    function lineD(pts) { return pts.map(function (p, i) { return (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1); }).join(' '); }
+    function areaD(pts) { return lineD(pts) + ' L' + pts[pts.length - 1].x.toFixed(1) + ' ' + baseY + ' L' + pts[0].x.toFixed(1) + ' ' + baseY + ' Z'; }
+    function dots(pts, cls) {
+      return pts.filter(function (p) { return p.mark; }).map(function (p) {
+        return '<circle class="adm-dot ' + cls + '" cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="5"/>';
       }).join('');
     }
-    // gridlines + y labels (4 steps)
+    // value labels above each marked point (only when the data is sparse enough to stay legible)
+    function valueLabels(pts, key, cls) {
+      if (days.length > 8) return '';
+      return pts.filter(function (p) { return p.mark; }).map(function (p, k) {
+        var v = single ? byDay[days[0]][key] : byDay[days[k]][key];
+        var dy = key === 'prof' ? 18 : -10;   // profit label below its point, revenue above, to avoid overlap
+        return '<text class="adm-vlabel ' + cls + '" x="' + p.x.toFixed(1) + '" y="' + (p.y + dy).toFixed(1) + '" text-anchor="middle">' + money(v) + '</text>';
+      }).join('');
+    }
+
+    var revPts = coords('rev'), profPts = coords('prof');
+
+    // gridlines + y labels
     var grid = '', GY = 4;
     for (var g = 0; g <= GY; g++) {
       var val = niceMax * g / GY, y = yAt(val);
       grid += '<line class="adm-grid" x1="' + m.l + '" y1="' + y.toFixed(1) + '" x2="' + (W - m.r) + '" y2="' + y.toFixed(1) + '"/>' +
-        '<text class="adm-axis" x="' + (m.l - 10) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end">' + money(val) + '</text>';
+        '<text class="adm-axis" x="' + (m.l - 12) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end">' + money(val) + '</text>';
     }
-    // x labels (first, middle, last to avoid crowding)
+    // x-axis date labels
     var xl = '';
-    var idxs = days.length <= 4 ? days.map(function (_, i) { return i; }) : [0, Math.floor((days.length - 1) / 2), days.length - 1];
+    var idxs = single ? [0] : (days.length <= 6 ? days.map(function (_, i) { return i; }) : [0, Math.floor((days.length - 1) / 2), days.length - 1]);
     idxs.forEach(function (i) {
       var lbl = new Date(days[i]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-      xl += '<text class="adm-axis" x="' + xAt(i).toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle">' + lbl + '</text>';
+      xl += '<text class="adm-axis" x="' + xAt(i).toFixed(1) + '" y="' + (H - 14) + '" text-anchor="middle">' + lbl + '</text>';
     });
-    // direct labels at last point
-    var li = days.length - 1;
-    var lastLabels =
-      '<text class="adm-dlabel adm-dlabel--rev" x="' + (xAt(li) + 8) + '" y="' + (yAt(byDay[days[li]].rev) + 4) + '">' + money(byDay[days[li]].rev) + '</text>' +
-      '<text class="adm-dlabel adm-dlabel--prof" x="' + (xAt(li) + 8) + '" y="' + (yAt(byDay[days[li]].prof) + 4) + '">' + money(byDay[days[li]].prof) + '</text>';
 
     host.innerHTML =
       '<svg viewBox="0 0 ' + W + ' ' + H + '" class="adm-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Revenue and profit over time">' +
-        grid +
-        '<path class="adm-line adm-line--rev" d="' + path('rev') + '"/>' +
-        '<path class="adm-line adm-line--prof" d="' + path('prof') + '"/>' +
-        markers('rev', 'adm-dot--rev') + markers('prof', 'adm-dot--prof') +
-        lastLabels +
+        grid + xl +
+        '<path class="adm-area adm-area--rev" d="' + areaD(revPts) + '"/>' +
+        '<path class="adm-area adm-area--prof" d="' + areaD(profPts) + '"/>' +
+        '<path class="adm-line adm-line--rev" d="' + lineD(revPts) + '"/>' +
+        '<path class="adm-line adm-line--prof" d="' + lineD(profPts) + '"/>' +
+        dots(revPts, 'adm-dot--rev') + dots(profPts, 'adm-dot--prof') +
+        valueLabels(revPts, 'rev', 'adm-vlabel--rev') + valueLabels(profPts, 'prof', 'adm-vlabel--prof') +
         '<rect id="admHit" x="' + m.l + '" y="' + m.t + '" width="' + iw + '" height="' + ih + '" fill="transparent"/>' +
-        '<g id="admCross" style="display:none"><line class="adm-cross" y1="' + m.t + '" y2="' + (m.t + ih) + '"/></g>' +
+        '<g id="admCross" style="display:none"><line class="adm-cross" y1="' + m.t + '" y2="' + baseY + '"/></g>' +
       '</svg>' +
       '<div id="admTip" class="adm-tip" hidden></div>';
 

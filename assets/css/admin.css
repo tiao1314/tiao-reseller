@@ -92,15 +92,18 @@ button, input, select { font-family: inherit; }
 .adm-svg { width: 100%; height: auto; display: block; }
 .adm-grid { stroke: var(--grid); stroke-width: 1; }
 .adm-axis { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-.adm-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.adm-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
 .adm-line--rev { stroke: var(--rev); }
 .adm-line--prof { stroke: var(--prof); }
-.adm-dot { stroke: var(--surface); stroke-width: 2; }
+.adm-area { stroke: none; }
+.adm-area--rev { fill: var(--rev); opacity: .10; }
+.adm-area--prof { fill: var(--prof); opacity: .14; }
+.adm-dot { stroke: var(--surface); stroke-width: 2.5; }
 .adm-dot--rev { fill: var(--rev); }
 .adm-dot--prof { fill: var(--prof); }
-.adm-dlabel { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.adm-dlabel--rev { fill: var(--rev); }
-.adm-dlabel--prof { fill: var(--prof); }
+.adm-vlabel { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.adm-vlabel--rev { fill: var(--rev); }
+.adm-vlabel--prof { fill: var(--prof); }
 .adm-cross { stroke: var(--axis); stroke-width: 1; stroke-dasharray: 3 3; }
 .adm-legend { display: flex; gap: 16px; }
 .adm-key { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
