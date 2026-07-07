@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/admin.css?v=8" />
+  <link rel="stylesheet" href="assets/css/admin.css?v=9" />
 </head>
 <body class="adm" data-palette="#2a78d6,#1baf7a">
 
@@ -71,7 +71,10 @@
         <section class="adm-card">
           <div class="adm-card__head">
             <h2>Orders</h2>
-            <div class="adm-filters" id="statusFilters"></div>
+            <div class="adm-head-right">
+              <div class="adm-filters" id="statusFilters"></div>
+              <button class="adm-btn adm-btn--solid adm-neworder" id="addOrderBtn">+ New order</button>
+            </div>
           </div>
           <div class="adm-table-wrap">
             <table class="adm-table" id="ordersTable">
@@ -105,6 +108,6 @@
   </div>
 
   <script src="assets/js/config.js?v=6"></script>
-  <script src="assets/js/admin.js?v=8"></script>
+  <script src="assets/js/admin.js?v=9"></script>
 </body>
 </html>

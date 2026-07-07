@@ -59,7 +59,7 @@
         '<div class="acct-order__items">' + items +
           '<div class="checkout__total"><span>Estimated total</span><strong>' + money(o.subtotal) + '</strong></div>' +
         '</div>' +
-        (o.tracking_url ? '<a class="btn btn--outline acct-track" href="' + esc(o.tracking_url) + '" target="_blank" rel="noopener">TRACK PARCEL →</a>' : '') +
+        (o.tracking_url ? '<a class="btn btn--outline acct-track-btn" href="' + esc(o.tracking_url) + '" target="_blank" rel="noopener">TRACK PARCEL →</a>' : '') +
       '</article>';
     }).join('');
   }
@@ -91,15 +91,18 @@
   // ---- guest tracking (no account) ----
   function renderGuest(body) {
     body.innerHTML =
-      '<div class="acct-signin"><p>Signed up? <button class="link-inline" data-open="account">Sign in</button> to see all your orders.</p></div>' +
-      '<div class="acct-track"><h2>Track a guest order</h2>' +
-        '<p class="muted-note">Ordered without an account? Enter the reference from your confirmation and your email.</p>' +
-        '<form class="req-form acct-track__form" id="guestForm">' +
-          '<label>Reference<input type="text" name="ref" placeholder="TIAO-XXXXXX" required /></label>' +
-          '<label>Email<input type="email" name="email" placeholder="Email used at checkout" required /></label>' +
-          '<button type="submit" class="btn btn--solid btn--block" id="guestBtn">CHECK STATUS</button>' +
-        '</form>' +
-        '<div id="guestResult"></div>' +
+      '<div class="acct-guest">' +
+        '<div class="acct-track">' +
+          '<h2>Track your order</h2>' +
+          '<p class="muted-note">Enter the reference from your confirmation (looks like <b>TIAO-XXXXXX</b>) and the email you used at checkout.</p>' +
+          '<form class="req-form acct-track__form" id="guestForm">' +
+            '<label>Reference<input type="text" name="ref" placeholder="TIAO-XXXXXX" required autocapitalize="characters" /></label>' +
+            '<label>Email<input type="email" name="email" placeholder="Email used at checkout" required autocomplete="email" /></label>' +
+            '<button type="submit" class="btn btn--solid btn--block" id="guestBtn">CHECK STATUS</button>' +
+          '</form>' +
+          '<div id="guestResult"></div>' +
+        '</div>' +
+        '<p class="acct-signin">Have a tiao account? <button class="link-inline" data-open="account">Sign in</button> to see all your orders in one place.</p>' +
       '</div>';
     document.getElementById('guestForm').addEventListener('submit', function (e) {
       e.preventDefault();

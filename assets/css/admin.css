@@ -121,6 +121,22 @@ button, input, select { font-family: inherit; }
 /* ---- cards ---- */
 .adm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; box-shadow: var(--shadow); }
 .adm-card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.adm-head-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.adm-neworder { white-space: nowrap; }
+.adm-mini--del { border-color: var(--line); }
+.adm-mini--del:hover { background: var(--critical); color: #fff; border-color: var(--critical); }
+
+/* manual order form items */
+.adm-lbl { font-size: 12px; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 8px; }
+.adm-oitems { border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.adm-oadd { display: flex; gap: 8px; }
+.adm-oadd select { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--ink); font-size: 13px; font-family: inherit; }
+.adm-olist { margin: 12px 0; display: flex; flex-direction: column; gap: 6px; }
+.adm-oitem { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; padding: 8px 10px; background: var(--surface-2); border-radius: 6px; }
+.adm-x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; margin-left: 8px; }
+.adm-x:hover { color: var(--critical); }
+.adm-ototal { display: flex; justify-content: space-between; font-size: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+.adm-ototal strong { font-size: 16px; }
 .adm-card__head h2 { font-size: 15px; font-weight: 700; }
 .adm-muted { color: var(--muted); }
 .adm-sm { font-size: 12px; }
@@ -144,8 +160,15 @@ button, input, select { font-family: inherit; }
 .adm-vlabel--rev { fill: var(--rev); }
 .adm-vlabel--prof { fill: var(--prof); }
 .adm-cross { stroke: var(--axis); stroke-width: 1; stroke-dasharray: 3 3; }
-.adm-legend { display: flex; gap: 16px; }
+.adm-legend { display: flex; gap: 10px; flex-wrap: wrap; }
 .adm-key { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+.adm-key--btn { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--ink); cursor: pointer; user-select: none; transition: border-color .15s, color .15s; }
+.adm-key--btn:hover { border-color: var(--muted); }
+.adm-key--btn.is-off { color: var(--muted); }
+.adm-tick { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid var(--axis); display: inline-grid; place-items: center; }
+.adm-key--btn.is-on .adm-tick { border-color: transparent; }
+.adm-key--btn.is-on .adm-tick .adm-swatch { width: 16px; height: 16px; border-radius: 5px; }
+.adm-key--btn.is-off .adm-swatch { display: none; }
 .adm-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 .adm-swatch--rev { background: var(--rev); }
 .adm-swatch--prof { background: var(--prof); }
@@ -197,7 +220,26 @@ button, input, select { font-family: inherit; }
   .adm-tiles { grid-template-columns: 1fr 1fr; }
   .adm-user { display: none; }
 }
-@media (max-width: 480px) {
-  .adm-tiles { grid-template-columns: 1fr 1fr; }
-  .adm-tile__value { font-size: 22px; }
+@media (max-width: 560px) {
+  .adm-top { padding: 12px 16px; }
+  .adm-tabs { padding: 14px 16px 0; }
+  .adm-main { padding: 14px 16px 50px; gap: 16px; }
+  .adm-tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .adm-tile { padding: 14px; }
+  .adm-tile__value { font-size: 20px; }
+  .adm-card { padding: 16px; }
+  .adm-card__head h2 { font-size: 14px; }
+  .adm-head-right { width: 100%; }
+  .adm-head-right .adm-filters { flex: 1; }
+  .adm-neworder { flex-shrink: 0; }
+  .adm-listings { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .adm-listing__name { font-size: 12px; }
+  .adm-lmodal { padding: 0; place-items: stretch; }
+  .adm-lmodal__panel { width: 100%; max-width: none; max-height: 100vh; border-radius: 0; padding: 24px 18px 40px; }
+  .adm-legend { width: 100%; }
+  .adm-refresh-txt { display: none; }
+}
+@media (max-width: 380px) {
+  .adm-tiles { grid-template-columns: 1fr; }
+  .adm-listings { grid-template-columns: 1fr; }
 }

@@ -181,6 +181,12 @@
   }
 
   /* ---- SVG line chart: revenue + profit over time (by day) ---- */
+  var chartSeries = { rev: true, prof: true };
+  function legendBtn(key, label) {
+    var on = chartSeries[key];
+    return '<button class="adm-key adm-key--btn ' + (on ? 'is-on' : 'is-off') + '" data-series="' + key + '">' +
+      '<span class="adm-tick"><i class="adm-swatch adm-swatch--' + key + '"></i></span>' + label + '</button>';
+  }
   function renderChart() {
     var host = el('chart');
     var confirmed = state.orders.filter(function (o) { return CONFIRMED.indexOf(o.status) !== -1; });
@@ -195,9 +201,16 @@
     });
     var days = Object.keys(byDay).sort();
 
-    el('chartLegend').innerHTML =
-      '<span class="adm-key"><i class="adm-swatch adm-swatch--rev"></i>Revenue</span>' +
-      '<span class="adm-key"><i class="adm-swatch adm-swatch--prof"></i>Profit</span>';
+    el('chartLegend').innerHTML = legendBtn('rev', 'Revenue') + legendBtn('prof', 'Profit');
+    el('chartLegend').querySelectorAll('[data-series]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = b.dataset.series;
+        var onCount = (chartSeries.rev ? 1 : 0) + (chartSeries.prof ? 1 : 0);
+        if (chartSeries[k] && onCount === 1) return;   // keep at least one series visible
+        chartSeries[k] = !chartSeries[k];
+        renderChart();
+      });
+    });
 
     if (days.length === 0) {
       host.innerHTML = '<p class="adm-empty">No confirmed orders yet — accept an order to see it here.</p>';
@@ -207,7 +220,9 @@
     var W = Math.max(host.clientWidth || 760, 320), H = 300;
     var m = { t: 24, r: 66, b: 40, l: 64 };
     var iw = W - m.l - m.r, ih = H - m.t - m.b;
-    var maxV = Math.max.apply(null, days.map(function (d) { return byDay[d].rev; }).concat([1]));
+    var maxV = Math.max.apply(null, days.map(function (d) {
+      return Math.max(chartSeries.rev ? byDay[d].rev : 0, chartSeries.prof ? byDay[d].prof : 0);
+    }).concat([1]));
     var step = Math.pow(10, Math.floor(Math.log10(maxV)));
     var niceMax = Math.ceil(maxV / step) * step || 1;
 
@@ -262,12 +277,12 @@
     host.innerHTML =
       '<svg viewBox="0 0 ' + W + ' ' + H + '" class="adm-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Revenue and profit over time">' +
         grid + xl +
-        '<path class="adm-area adm-area--rev" d="' + areaD(revPts) + '"/>' +
-        '<path class="adm-area adm-area--prof" d="' + areaD(profPts) + '"/>' +
-        '<path class="adm-line adm-line--rev" d="' + lineD(revPts) + '"/>' +
-        '<path class="adm-line adm-line--prof" d="' + lineD(profPts) + '"/>' +
-        dots(revPts, 'adm-dot--rev') + dots(profPts, 'adm-dot--prof') +
-        valueLabels(revPts, 'rev', 'adm-vlabel--rev') + valueLabels(profPts, 'prof', 'adm-vlabel--prof') +
+        (chartSeries.rev ? '<path class="adm-area adm-area--rev" d="' + areaD(revPts) + '"/>' : '') +
+        (chartSeries.prof ? '<path class="adm-area adm-area--prof" d="' + areaD(profPts) + '"/>' : '') +
+        (chartSeries.rev ? '<path class="adm-line adm-line--rev" d="' + lineD(revPts) + '"/>' : '') +
+        (chartSeries.prof ? '<path class="adm-line adm-line--prof" d="' + lineD(profPts) + '"/>' : '') +
+        (chartSeries.rev ? dots(revPts, 'adm-dot--rev') : '') + (chartSeries.prof ? dots(profPts, 'adm-dot--prof') : '') +
+        (chartSeries.rev ? valueLabels(revPts, 'rev', 'adm-vlabel--rev') : '') + (chartSeries.prof ? valueLabels(profPts, 'prof', 'adm-vlabel--prof') : '') +
         '<rect id="admHit" x="' + m.l + '" y="' + m.t + '" width="' + iw + '" height="' + ih + '" fill="transparent"/>' +
         '<g id="admCross" style="display:none"><line class="adm-cross" y1="' + m.t + '" y2="' + baseY + '"/></g>' +
       '</svg>' +
@@ -292,8 +307,8 @@
       cross.style.display = ''; crossLine.setAttribute('x1', xAt(i)); crossLine.setAttribute('x2', xAt(i));
       tip.hidden = false;
       tip.innerHTML = '<strong>' + new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + '</strong>' +
-        '<span><i class="adm-swatch adm-swatch--rev"></i>Revenue ' + money(byDay[d].rev) + '</span>' +
-        '<span><i class="adm-swatch adm-swatch--prof"></i>Profit ' + money(byDay[d].prof) + '</span>';
+        (chartSeries.rev ? '<span><i class="adm-swatch adm-swatch--rev"></i>Revenue ' + money(byDay[d].rev) + '</span>' : '') +
+        (chartSeries.prof ? '<span><i class="adm-swatch adm-swatch--prof"></i>Profit ' + money(byDay[d].prof) + '</span>' : '');
       var left = Math.min((e.clientX - r.left) + 14, r.width - tip.offsetWidth - 8);
       tip.style.left = Math.max(8, left) + 'px'; tip.style.top = '12px';
     });
@@ -342,6 +357,7 @@
           '<div class="adm-actions">' +
             '<button class="adm-mini adm-mini--ok" data-accept="' + o.id + '">Accept</button>' +
             '<button class="adm-mini adm-mini--no" data-decline="' + o.id + '">Decline</button>' +
+            '<button class="adm-mini adm-mini--del" data-delorder="' + o.id + '" title="Delete order">🗑</button>' +
           '</div></td>' +
         '<td>' + statusSel + track +
           (o.tracking_url ? '<a class="adm-tracklink" href="' + esc(o.tracking_url) + '" target="_blank" rel="noopener">Open tracking →</a>' : '') +
@@ -355,6 +371,7 @@
     var body = el('ordersBody');
     body.querySelectorAll('[data-accept]').forEach(function (b) { b.addEventListener('click', function () { update(b.dataset.accept, { status: 'accepted' }); }); });
     body.querySelectorAll('[data-decline]').forEach(function (b) { b.addEventListener('click', function () { update(b.dataset.decline, { status: 'declined' }); }); });
+    body.querySelectorAll('[data-delorder]').forEach(function (b) { b.addEventListener('click', function () { deleteOrder(b.dataset.delorder); }); });
     body.querySelectorAll('.adm-select').forEach(function (s) { s.addEventListener('change', function () { update(s.dataset.id, { status: s.value }); }); });
     body.querySelectorAll('.adm-track').forEach(function (t) {
       t.addEventListener('keydown', function (e) { if (e.key === 'Enter') { t.blur(); } });
@@ -370,6 +387,85 @@
     apiPatch('orders?id=eq.' + encodeURIComponent(id), patch).catch(function (err) { console.error(err); loadData(); });
   }
 
+  function deleteOrder(id) {
+    if (!window.confirm('Delete this order permanently? This cannot be undone.')) return;
+    request('DELETE', 'orders?id=eq.' + encodeURIComponent(id)).then(function () {
+      state.orders = state.orders.filter(function (o) { return String(o.id) !== String(id); });
+      renderAll();
+    }).catch(function (err) { alert('Delete failed: ' + err.message); });
+  }
+
+  /* ---- manually add an order ---- */
+  function ensureProducts() {
+    if (products.length) return Promise.resolve();
+    return apiGet('products?select=*&order=brand.asc').then(function (rows) { products = rows || []; }, function () { products = []; });
+  }
+
+  function openOrderForm() {
+    ensureProducts().then(renderOrderForm);
+  }
+
+  function renderOrderForm() {
+    var picked = [];
+    var opts = '<option value="">— choose a product —</option>' + products.map(function (p) {
+      return '<option value="' + esc(p.id) + '">' + esc(p.brand) + ' — ' + esc(p.name) + ' (' + money(p.price) + ')</option>';
+    }).join('');
+    el('listingModalBody').innerHTML =
+      '<button class="adm-lmodal__close" data-lclose>✕</button>' +
+      '<h3>New order</h3>' +
+      '<form id="orderForm" class="adm-lform">' +
+        '<label>Customer name<input name="name" required placeholder="Full name"></label>' +
+        '<div class="adm-lrow"><label>Email<input name="email" type="email" required placeholder="name@email.com"></label>' +
+          '<label>Phone<input name="phone" placeholder="Optional"></label></div>' +
+        '<label>Note<input name="note" placeholder="Optional"></label>' +
+        '<label>Status<select name="status">' +
+          STATUSES.map(function (s) { return '<option value="' + s + '">' + STATUS_META[s].label + '</option>'; }).join('') + '</select></label>' +
+        '<div class="adm-oitems"><span class="adm-lbl">Items</span>' +
+          '<div class="adm-oadd"><select id="oProduct">' + opts + '</select>' +
+            '<button type="button" class="adm-btn adm-btn--ghost" id="oAdd">Add</button></div>' +
+          '<div id="oList" class="adm-olist"></div>' +
+          '<div class="adm-ototal">Subtotal <strong id="oTotal">£0</strong></div>' +
+        '</div>' +
+        '<p class="adm-lmsg" id="oMsg" hidden></p>' +
+        '<div class="adm-lactions"><button type="submit" class="adm-btn adm-btn--solid" id="oSave">CREATE ORDER</button></div>' +
+      '</form>';
+    el('listingModal').hidden = false;
+
+    function renderItems() {
+      el('oList').innerHTML = picked.length ? picked.map(function (it, i) {
+        return '<div class="adm-oitem"><span>' + esc(it.brand) + ' ' + esc(it.name) + '</span>' +
+          '<span>' + money(it.price) + ' <button type="button" class="adm-x" data-rm="' + i + '">✕</button></span></div>';
+      }).join('') : '<p class="adm-muted adm-sm">No items added yet.</p>';
+      el('oTotal').textContent = money(picked.reduce(function (s, it) { return s + Number(it.price); }, 0));
+      el('oList').querySelectorAll('[data-rm]').forEach(function (b) {
+        b.addEventListener('click', function () { picked.splice(+b.dataset.rm, 1); renderItems(); });
+      });
+    }
+    renderItems();
+
+    el('oAdd').addEventListener('click', function () {
+      var sel = el('oProduct'), id = sel.value; if (!id) return;
+      var p = products.find(function (x) { return String(x.id) === id; });
+      if (p) { picked.push({ id: p.id, brand: p.brand, name: p.name, price: Number(p.price), img: p.img }); renderItems(); sel.value = ''; }
+    });
+
+    el('orderForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var f = e.target, btn = el('oSave'), msg = el('oMsg');
+      if (!picked.length) { msg.hidden = false; msg.textContent = 'Add at least one item.'; return; }
+      var order = {
+        customer_name: f.name.value.trim(), customer_email: f.email.value.trim(),
+        customer_phone: f.phone.value.trim(), note: f.note.value.trim(),
+        items: picked, subtotal: picked.reduce(function (s, it) { return s + Number(it.price); }, 0),
+        status: f.status.value, ref_code: 'TIAO-' + Math.random().toString(36).slice(2, 8).toUpperCase()
+      };
+      btn.disabled = true; btn.textContent = 'CREATING…'; msg.hidden = true;
+      request('POST', 'orders', { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, JSON.stringify(order))
+        .then(function () { closeListingModal(); loadData(); })
+        .catch(function (err) { btn.disabled = false; btn.textContent = 'CREATE ORDER'; msg.hidden = false; msg.textContent = err.message || 'Could not create'; });
+    });
+  }
+
   /* ================= LISTINGS ================= */
   var CATEGORIES = ['bags', 'shoes', 'watches', 'accessories'];
   var BADGES = ['ON HAND', 'NEW IN', 'AUTHENTICATED'];
@@ -383,6 +479,7 @@
       t.addEventListener('click', function () { switchView(t.dataset.view); });
     });
     el('addListingBtn').addEventListener('click', function () { openListingForm(null); });
+    el('addOrderBtn').addEventListener('click', openOrderForm);
     document.getElementById('listingModal').addEventListener('click', function (e) {
       if (e.target.hasAttribute('data-lclose')) closeListingModal();
     });
