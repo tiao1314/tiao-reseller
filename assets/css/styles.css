@@ -402,6 +402,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: 4px; transition: background .2s, border-color .2s;
 }
 .gbtn-demo:hover { background: #f6f6f4; border-color: #d0d0cd; }
+.login__social { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.login__soc { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 14px; font-weight: 600; padding: 12px; border-radius: 4px; cursor: pointer; transition: background .2s, border-color .2s; }
+.login__soc:hover { background: #f6f6f4; border-color: #d0d0cd; }
+.login__soc svg { flex-shrink: 0; }
 .login__divider { display: flex; align-items: center; gap: 14px; margin: 22px 0; color: var(--ink-soft); font-size: 12px; }
 .login__divider::before, .login__divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .login__form { display: flex; flex-direction: column; gap: 10px; }

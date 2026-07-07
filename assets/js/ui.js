@@ -177,11 +177,18 @@
       return;
     }
     var signup = authMode === 'signup';
+    var gIcon = '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>';
+    var dIcon = '<svg viewBox="0 0 24 24" width="18" height="18" fill="#5865F2"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a18.3 18.3 0 0 1 4.34 1.35 15.6 15.6 0 0 0-11.06 0A18 18 0 0 1 12.8 3.5L12.56 3A19.7 19.7 0 0 0 7.7 4.4C4.55 9.06 3.7 13.6 4.12 18.08a19.9 19.9 0 0 0 6.06 3.06l.48-.66a13 13 0 0 1-1.9-.92l.16-.12a14.2 14.2 0 0 0 12.15 0l.16.12c-.6.36-1.24.67-1.9.92l.48.66a19.8 19.8 0 0 0 6.06-3.06c.5-5.2-.86-9.7-3.28-13.68zM9.68 15.33c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42s2.17 1.1 2.15 2.42c0 1.34-.96 2.42-2.15 2.42zm4.64 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42s2.17 1.1 2.15 2.42c0 1.34-.95 2.42-2.15 2.42z"/></svg>';
     panel.innerHTML = '' +
       '<button class="modal__close" data-close aria-label="Close">✕</button>' +
       '<div class="login"><span class="login__logo">tiao</span>' +
       '<h3>' + (signup ? 'Create account' : 'Sign in') + '</h3>' +
       '<p>' + (signup ? 'Join tiao to track your orders.' : 'Access your orders and faster checkout.') + '</p>' +
+      '<div class="login__social">' +
+        '<button type="button" class="login__soc" data-oauth="google">' + gIcon + 'Continue with Google</button>' +
+        '<button type="button" class="login__soc" data-oauth="discord">' + dIcon + 'Continue with Discord</button>' +
+      '</div>' +
+      '<div class="login__divider"><span>or with email</span></div>' +
       '<form class="login__form js-auth-form">' +
         '<input type="email" name="email" placeholder="Email address" required aria-label="Email" autocomplete="email" />' +
         '<input type="password" name="password" placeholder="Password (min 6 characters)" required minlength="6" aria-label="Password" autocomplete="' + (signup ? 'new-password' : 'current-password') + '" />' +
@@ -303,6 +310,8 @@
       if (e.target.closest('.js-auth-toggle')) {
         e.preventDefault(); authMode = (authMode === 'signup' ? 'signin' : 'signup'); renderAccount(); return;
       }
+      var oauthBtn = e.target.closest('[data-oauth]');
+      if (oauthBtn) { e.preventDefault(); if (window.TiaoAuth) window.TiaoAuth.oauth(oauthBtn.dataset.oauth); return; }
     });
 
     // Search input
@@ -340,6 +349,14 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
 
     Store.onChange(function () { renderBadges(); renderCart(); renderWish(); });
+
+    // reflect the real (TiaoAuth) sign-in state in the header
+    if (window.TiaoAuth && window.TiaoAuth.isLoggedIn()) syncStore(window.TiaoAuth.getUser());
+    else if (window.TiaoAuth && Store.getUser()) syncStore(null);   // stale — clear it
+    document.addEventListener('tiao:auth', function () {
+      syncStore(window.TiaoAuth.getUser()); renderBadges(); renderAccount(); toast('Signed in');
+    });
+
     renderBadges();
   }
 

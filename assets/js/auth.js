@@ -47,6 +47,14 @@
       });
     },
 
+    // Kick off a social login (google / discord). Redirects away and comes
+    // back to this same page with the session in the URL hash.
+    oauth: function (provider) {
+      var redirect = window.location.href.split('#')[0];
+      window.location.href = AUTH + 'authorize?provider=' + encodeURIComponent(provider) +
+        '&redirect_to=' + encodeURIComponent(redirect);
+    },
+
     signOut: function () { clear(); },
 
     // Returns a valid access token, refreshing it if needed. Rejects if signed out.
@@ -71,4 +79,25 @@
   }
 
   window.TiaoAuth = TiaoAuth;
+
+  // On page load, complete a social login if we came back with tokens in the URL.
+  function handleCallback() {
+    var h = window.location.hash || '';
+    if (h.indexOf('access_token=') === -1) return Promise.resolve(false);
+    var params = {};
+    h.replace(/^#/, '').split('&').forEach(function (kv) {
+      var p = kv.split('='); params[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || '');
+    });
+    if (!params.access_token) return Promise.resolve(false);
+    return fetch(AUTH + 'user', {
+      headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + params.access_token }
+    }).then(function (r) { return r.ok ? r.json() : null; }).then(function (user) {
+      if (!user || !user.id) return false;
+      saveSession({ access_token: params.access_token, refresh_token: params.refresh_token, user: user });
+      try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+      document.dispatchEvent(new CustomEvent('tiao:auth', { detail: { user: { id: user.id, email: user.email } } }));
+      return true;
+    }).catch(function () { return false; });
+  }
+  window.TIAO_AUTH_READY = handleCallback();
 })();
