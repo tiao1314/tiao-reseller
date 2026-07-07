@@ -5,32 +5,61 @@
   var CFG = window.TIAO_CONFIG || {};
   var REST = (CFG.SUPABASE_URL || '') + '/rest/v1/';
   var AUTH = (CFG.SUPABASE_URL || '') + '/auth/v1/';
-  var TKEY = 'tiao_admin_token', EKEY = 'tiao_admin_email';
+  var TKEY = 'tiao_admin_token', RKEY = 'tiao_admin_refresh', EKEY = 'tiao_admin_email';
   var token = localStorage.getItem(TKEY) || '';
   var userEmail = localStorage.getItem(EKEY) || '';
 
   // Direct REST helpers (no supabase-js). apikey identifies the project; the
-  // Bearer is the admin's session token from login, resolving to the
-  // authenticated role for row-level security.
+  // Bearer is the admin's session token, resolving to the authenticated role.
   function headers(extra) {
     var h = { 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token };
     if (extra) { for (var k in extra) h[k] = extra[k]; }
     return h;
   }
-  function apiGet(path) {
-    return fetch(REST + path, { headers: headers() }).then(function (r) {
+  function saveSession(d) {
+    token = d.access_token;
+    if (d.user && d.user.email) userEmail = d.user.email;
+    localStorage.setItem(TKEY, token);
+    if (d.refresh_token) localStorage.setItem(RKEY, d.refresh_token);
+    localStorage.setItem(EKEY, userEmail);
+  }
+  // Exchange the refresh token for a fresh access token when the old one expires.
+  function refreshSession() {
+    var rt = localStorage.getItem(RKEY);
+    if (!rt) return Promise.reject(new Error('no-refresh'));
+    return fetch(AUTH + 'token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: rt })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.access_token) throw new Error('refresh-failed');
+      saveSession(d); return token;
+    });
+  }
+  // Core request with one automatic token-refresh + retry on 401.
+  function request(method, path, extraHeaders, body, retried) {
+    var opts = { method: method, headers: headers(extraHeaders) };
+    if (body != null) opts.body = body;
+    return fetch(REST + path, opts).then(function (r) {
+      if (r.status === 401 && !retried) {
+        return refreshSession()
+          .then(function () { return request(method, path, extraHeaders, body, true); })
+          .catch(function () { authFail(); throw new Error('Session expired'); });
+      }
       return r.text().then(function (t) {
         if (!r.ok) throw new Error('HTTP ' + r.status + (t ? ' — ' + t : ''));
         return t ? JSON.parse(t) : [];
       });
     });
   }
-  function apiPatch(path, body) {
-    return fetch(REST + path, {
-      method: 'PATCH',
-      headers: headers({ 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
-      body: JSON.stringify(body)
-    }).then(function (r) { if (!r.ok) throw new Error('Update failed (' + r.status + ')'); });
+  function apiGet(path) { return request('GET', path); }
+  function apiPatch(path, bodyObj) {
+    return request('PATCH', path, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, JSON.stringify(bodyObj));
+  }
+  function authFail() {
+    token = ''; localStorage.removeItem(TKEY); localStorage.removeItem(RKEY);
+    showLogin();
+    var m = el('loginMsg'); if (m) { m.hidden = false; m.textContent = 'Your session expired — please sign in again.'; }
   }
 
   var CONFIRMED = ['accepted', 'shipped', 'delivered']; // count toward revenue/profit
@@ -86,9 +115,8 @@
           msg.textContent = (res.d && (res.d.msg || res.d.error_description || res.d.error)) || 'Invalid login credentials';
           return;
         }
-        token = res.d.access_token;
         userEmail = (res.d.user && res.d.user.email) || f.email.value.trim();
-        localStorage.setItem(TKEY, token); localStorage.setItem(EKEY, userEmail);
+        saveSession(res.d);
         showApp();
       }).catch(function () {
         btn.disabled = false; btn.textContent = 'SIGN IN';
