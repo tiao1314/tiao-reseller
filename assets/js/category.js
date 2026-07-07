@@ -93,10 +93,11 @@
   }
 
   /* ---------------- size guide ---------------- */
+  // [ foot length cm, UK, EU, US Men, US Women ]
   var SHOE_ROWS = [
-    ['UK 3', '35.5', '4', '5.5'], ['UK 4', '37', '5', '6.5'], ['UK 5', '38', '6', '7.5'],
-    ['UK 6', '39.5', '7', '8.5'], ['UK 7', '41', '8', '9.5'], ['UK 8', '42.5', '9', '10.5'],
-    ['UK 9', '44', '10', '11.5'], ['UK 10', '45', '11', '12.5'], ['UK 11', '46', '12', '13.5'], ['UK 12', '47.5', '13', '14.5']
+    ['22.0', 'UK 3', '35.5', '4', '5.5'], ['22.9', 'UK 4', '37', '5', '6.5'], ['23.5', 'UK 5', '38', '6', '7.5'],
+    ['24.4', 'UK 6', '39.5', '7', '8.5'], ['25.4', 'UK 7', '41', '8', '9.5'], ['26.0', 'UK 8', '42.5', '9', '10.5'],
+    ['27.0', 'UK 9', '44', '10', '11.5'], ['27.9', 'UK 10', '45', '11', '12.5'], ['28.6', 'UK 11', '46', '12', '13.5'], ['29.4', 'UK 12', '47.5', '13', '14.5']
   ];
   var BAG_ROWS = [
     ['Mini', '≤ 18 cm wide', 'Phone, cards, lipstick'],
@@ -108,10 +109,18 @@
   function guideHTML(category) {
     if (category === 'shoes') {
       var rows = SHOE_ROWS.map(function (r) {
-        return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>';
+        return '<tr><td>' + r[0] + '</td><td><strong>' + r[1] + '</strong></td><td>' + r[2] + '</td><td>' + r[3] + '</td><td>' + r[4] + '</td></tr>';
       }).join('');
-      return '<h3>Shoe size guide</h3><p class="sg-note">Approximate conversions — fit can vary by brand. When unsure, size to your usual UK.</p>' +
-        '<div class="sg-scroll"><table class="sg-table"><thead><tr><th>UK</th><th>EU</th><th>US Men</th><th>US Women</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+      return '<h3>Shoe size guide</h3>' +
+        '<p class="sg-note">Find your size by foot length. Fit can vary by brand — if you’re between sizes, we recommend sizing up.</p>' +
+        '<div class="sg-measure"><h4>How to measure your foot</h4><ol>' +
+          '<li>Place a sheet of paper on a hard floor with one edge against a wall.</li>' +
+          '<li>Stand on it with your heel touching the wall.</li>' +
+          '<li>Mark the tip of your longest toe on the paper.</li>' +
+          '<li>Measure the distance from the wall to the mark in centimetres.</li>' +
+          '<li>Measure both feet in the afternoon (feet swell through the day) and use the larger measurement.</li>' +
+        '</ol></div>' +
+        '<div class="sg-scroll"><table class="sg-table"><thead><tr><th>Foot length (cm)</th><th>UK</th><th>EU</th><th>US Men</th><th>US Women</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
     }
     var brows = BAG_ROWS.map(function (r) {
       return '<tr><td><strong>' + r[0] + '</strong></td><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>';

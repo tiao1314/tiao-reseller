@@ -30,7 +30,9 @@
       '</div></div>' +
       '<div class="wrap header__inner">' +
         '<nav class="nav nav--left">' + links + '</nav>' +
-        '<a href="index.html" class="logo"><img src="assets/img/logo.jpg" alt="dripdrip" class="logo__img" /></a>' +
+        '<a href="index.html" class="logo drip-logo" aria-label="dripdrip">' +
+          '<span class="drip-logo__text">dripdrip</span>' +
+          '<i class="drip drip--1"></i><i class="drip drip--2"></i><i class="drip drip--3"></i></a>' +
         '<div class="header__actions">' +
           '<button class="icon-btn" data-open="search">' + ICONS.search + '<span>SEARCH</span></button>' +
           '<button class="icon-btn" data-open="account">' + ICONS.user + '<span class="js-login-label">LOGIN</span></button>' +
@@ -45,7 +47,9 @@
   function footerHTML() {
     return '' +
       '<div class="wrap footer__grid">' +
-        '<div class="footer__brand"><img src="assets/img/logo.jpg" alt="dripdrip" class="logo__img logo__img--footer" />' +
+        '<div class="footer__brand"><span class="drip-logo drip-logo--footer">' +
+          '<span class="drip-logo__text">dripdrip</span>' +
+          '<i class="drip drip--1"></i><i class="drip drip--2"></i><i class="drip drip--3"></i></span>' +
           '<p>Authenticated luxury resale. Bags and shoes — verified, on-hand, ready to ship.</p></div>' +
         '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="account.html">Track Order</a><a href="request.html">Request</a></div>' +
         '<div class="footer__col"><h4>HELP</h4><a href="#">Authentication</a><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Contact</a></div>' +
