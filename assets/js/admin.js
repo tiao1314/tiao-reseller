@@ -3,7 +3,33 @@
   'use strict';
 
   var CFG = window.TIAO_CONFIG || {};
-  var db = window.TIAO_DB;
+  var REST = (CFG.SUPABASE_URL || '') + '/rest/v1/';
+  var AUTH = (CFG.SUPABASE_URL || '') + '/auth/v1/';
+  var TKEY = 'tiao_admin_token', EKEY = 'tiao_admin_email';
+  var token = localStorage.getItem(TKEY) || '';
+  var userEmail = localStorage.getItem(EKEY) || '';
+
+  // Direct REST helpers (no supabase-js). apikey identifies the project; the
+  // Bearer is the admin's session token from login, resolving to the
+  // authenticated role for row-level security.
+  function headers(extra) {
+    var h = { 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token };
+    if (extra) { for (var k in extra) h[k] = extra[k]; }
+    return h;
+  }
+  function apiGet(path) {
+    return fetch(REST + path, { headers: headers() }).then(function (r) {
+      if (r.status === 401) { signedOut(); throw new Error('Session expired'); }
+      return r.json();
+    });
+  }
+  function apiPatch(path, body) {
+    return fetch(REST + path, {
+      method: 'PATCH',
+      headers: headers({ 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+      body: JSON.stringify(body)
+    }).then(function (r) { if (!r.ok) throw new Error('Update failed (' + r.status + ')'); });
+  }
 
   var CONFIRMED = ['accepted', 'shipped', 'delivered']; // count toward revenue/profit
   var STATUSES = ['pending', 'accepted', 'declined', 'shipped', 'delivered'];
@@ -23,21 +49,20 @@
 
   /* ---------------- boot ---------------- */
   function boot() {
-    if (!window.TIAO_DB_READY) { el('notConfigured').hidden = false; return; }
-    db.auth.getSession().then(function (res) {
-      if (res.data.session) showApp(res.data.session);
-      else showLogin();
-    });
-    db.auth.onAuthStateChange(function (_e, session) {
-      if (session) showApp(session); else showLogin();
-    });
+    if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) { el('notConfigured').hidden = false; return; }
     wireAuth();
+    if (token) showApp(); else showLogin();
   }
 
   function showLogin() { el('loginGate').hidden = false; el('app').hidden = true; }
-  function showApp(session) {
+  function signedOut() {
+    token = ''; userEmail = '';
+    localStorage.removeItem(TKEY); localStorage.removeItem(EKEY);
+    showLogin();
+  }
+  function showApp() {
     el('loginGate').hidden = true; el('app').hidden = false;
-    el('admUser').textContent = session.user.email;
+    el('admUser').textContent = userEmail;
     loadData();
   }
 
@@ -46,25 +71,41 @@
       e.preventDefault();
       var f = e.target, btn = el('loginBtn'), msg = el('loginMsg');
       btn.disabled = true; btn.textContent = 'SIGNING IN…'; msg.hidden = true;
-      db.auth.signInWithPassword({ email: f.email.value, password: f.password.value })
-        .then(function (res) {
-          btn.disabled = false; btn.textContent = 'SIGN IN';
-          if (res.error) { msg.hidden = false; msg.textContent = res.error.message; }
-        });
+      fetch(AUTH + 'token?grant_type=password', {
+        method: 'POST',
+        headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: f.email.value.trim(), password: f.password.value })
+      }).then(function (r) {
+        return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+      }).then(function (res) {
+        btn.disabled = false; btn.textContent = 'SIGN IN';
+        if (!res.ok || !res.d.access_token) {
+          msg.hidden = false;
+          msg.textContent = (res.d && (res.d.msg || res.d.error_description || res.d.error)) || 'Invalid login credentials';
+          return;
+        }
+        token = res.d.access_token;
+        userEmail = (res.d.user && res.d.user.email) || f.email.value.trim();
+        localStorage.setItem(TKEY, token); localStorage.setItem(EKEY, userEmail);
+        showApp();
+      }).catch(function () {
+        btn.disabled = false; btn.textContent = 'SIGN IN';
+        msg.hidden = false; msg.textContent = 'Network error — please try again.';
+      });
     });
-    el('signoutBtn').addEventListener('click', function () { db.auth.signOut(); });
+    el('signoutBtn').addEventListener('click', signedOut);
     el('refreshBtn').addEventListener('click', loadData);
   }
 
   /* ---------------- data ---------------- */
   function loadData() {
     Promise.all([
-      db.from('orders').select('*').order('created_at', { ascending: false }),
-      db.from('product_costs').select('product_id, cost')
+      apiGet('orders?select=*&order=created_at.desc'),
+      apiGet('product_costs?select=product_id,cost')
     ]).then(function (r) {
-      state.orders = (r[0].data) || [];
+      state.orders = Array.isArray(r[0]) ? r[0] : [];
       state.costs = {};
-      (r[1].data || []).forEach(function (c) { state.costs[c.product_id] = Number(c.cost) || 0; });
+      (Array.isArray(r[1]) ? r[1] : []).forEach(function (c) { state.costs[c.product_id] = Number(c.cost) || 0; });
       renderAll();
     }).catch(function (err) { console.error(err); });
   }
@@ -271,9 +312,7 @@
     var o = state.orders.find(function (x) { return String(x.id) === String(id); });
     if (o) Object.assign(o, patch);
     if (!quiet) renderAll(); else { renderTiles(); renderChart(); }
-    db.from('orders').update(patch).eq('id', id).then(function (res) {
-      if (res.error) { console.error(res.error); loadData(); }
-    });
+    apiPatch('orders?id=eq.' + encodeURIComponent(id), patch).catch(function (err) { console.error(err); loadData(); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
