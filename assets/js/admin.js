@@ -19,8 +19,10 @@
   }
   function apiGet(path) {
     return fetch(REST + path, { headers: headers() }).then(function (r) {
-      if (r.status === 401) { signedOut(); throw new Error('Session expired'); }
-      return r.json();
+      return r.text().then(function (t) {
+        if (!r.ok) throw new Error('HTTP ' + r.status + (t ? ' — ' + t : ''));
+        return t ? JSON.parse(t) : [];
+      });
     });
   }
   function apiPatch(path, body) {
@@ -107,7 +109,14 @@
       state.costs = {};
       (Array.isArray(r[1]) ? r[1] : []).forEach(function (c) { state.costs[c.product_id] = Number(c.cost) || 0; });
       renderAll();
-    }).catch(function (err) { console.error(err); });
+    }).catch(function (err) {
+      console.error(err);
+      // Surface the real error on the dashboard instead of silently failing.
+      el('tiles').innerHTML = '<div class="adm-tile adm-tile--warn" style="grid-column:1/-1">' +
+        '<span class="adm-tile__label">Couldn’t load orders</span>' +
+        '<span class="adm-tile__value" style="font-size:14px;line-height:1.4">' + esc(String(err.message)) + '</span>' +
+        '<span class="adm-tile__sub">Screenshot this and send it to me.</span></div>';
+    });
   }
 
   function orderProfit(o) {
