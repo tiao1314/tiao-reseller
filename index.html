@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/jpeg" href="assets/img/logo.jpg" />
   <title>dripdrip — Authenticated Luxury Resale</title>
-  <meta name="description" content="dripdrip resells authenticated luxury bags, shoes, watches and accessories. Every piece verified, every price honest." />
+  <meta name="description" content="dripdrip resells authenticated luxury bags and shoes. Every piece verified, every price honest." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=12" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=13" />
 </head>
 <body>
   <header class="header" id="site-header"></header>
@@ -37,10 +38,6 @@
       <a class="cat" href="shoes.html">
         <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=400&q=80" alt="Luxury sneakers" loading="lazy" />
         <div class="cat__body"><h3>SHOES</h3><p>On-hand pairs, ready to ship.</p><span class="link-arrow">SHOP SHOES →</span></div>
-      </a>
-      <a class="cat" href="watches.html">
-        <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=400&q=80" alt="Luxury watches" loading="lazy" />
-        <div class="cat__body"><h3>WATCHES</h3><p>Timepieces, fully authenticated.</p><span class="link-arrow">SHOP WATCHES →</span></div>
       </a>
     </div>
   </section>
@@ -93,12 +90,12 @@
   <script src="assets/js/catalog.js?v=7"></script>
   <script src="assets/js/store.js"></script>
   <script src="assets/js/auth.js?v=11"></script>
-  <script src="assets/js/ui.js?v=12"></script>
+  <script src="assets/js/ui.js?v=13"></script>
   <script>
     // Home page: show a curated 8-product mix
     (function () {
       function render() {
-        var pick = ['b2','s1','w1','b3','s3','a1','b6','w4'];
+        var pick = ['b2','s1','b3','s3','b6','s2','b7','s4'];
         var list = pick.map(function (id) { return TIAO_PRODUCTS.find(function (p) { return p.id === id; }); }).filter(Boolean);
         if (list.length < 8) list = TIAO_PRODUCTS.slice(0, 8);   // robust if listings changed
         document.getElementById('productGrid').innerHTML = list.map(UI.card).join('');

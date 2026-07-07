@@ -83,7 +83,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-weight: 800;
   letter-spacing: .1em;
   padding-left: .1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+.logo__img { height: 52px; width: 52px; border-radius: 50%; object-fit: cover; display: block; }
+.logo__img--footer { height: 60px; width: 60px; margin-bottom: 16px; }
 
 .header__actions { display: flex; align-items: center; justify-content: flex-end; gap: 22px; }
 .icon-btn {
@@ -182,7 +187,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ===== Categories ===== */
 .cats { background: var(--dark); color: #f2f2f2; }
 .cats__inner {
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(2, 1fr);
   gap: 0;
 }
 .cat {

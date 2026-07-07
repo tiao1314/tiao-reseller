@@ -17,9 +17,7 @@
 
   var NAV = [
     { label: 'BAGS', href: 'bags.html' },
-    { label: 'SHOES', href: 'shoes.html' },
-    { label: 'WATCHES', href: 'watches.html' },
-    { label: 'ACCESSORIES', href: 'accessories.html' }
+    { label: 'SHOES', href: 'shoes.html' }
   ];
 
   /* =================== HEADER =================== */
@@ -32,7 +30,7 @@
       '</div></div>' +
       '<div class="wrap header__inner">' +
         '<nav class="nav nav--left">' + links + '</nav>' +
-        '<a href="index.html" class="logo">dripdrip</a>' +
+        '<a href="index.html" class="logo"><img src="assets/img/logo.jpg" alt="dripdrip" class="logo__img" /></a>' +
         '<div class="header__actions">' +
           '<button class="icon-btn" data-open="search">' + ICONS.search + '<span>SEARCH</span></button>' +
           '<button class="icon-btn" data-open="account">' + ICONS.user + '<span class="js-login-label">LOGIN</span></button>' +
@@ -47,9 +45,9 @@
   function footerHTML() {
     return '' +
       '<div class="wrap footer__grid">' +
-        '<div class="footer__brand"><span class="logo logo--footer">dripdrip</span>' +
-          '<p>Authenticated luxury resale. Bags, shoes, watches and accessories — verified, on-hand, ready to ship.</p></div>' +
-        '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="watches.html">Watches</a><a href="accessories.html">Accessories</a></div>' +
+        '<div class="footer__brand"><img src="assets/img/logo.jpg" alt="dripdrip" class="logo__img logo__img--footer" />' +
+          '<p>Authenticated luxury resale. Bags and shoes — verified, on-hand, ready to ship.</p></div>' +
+        '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="account.html">Track Order</a><a href="request.html">Request</a></div>' +
         '<div class="footer__col"><h4>HELP</h4><a href="#">Authentication</a><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Contact</a></div>' +
         '<div class="footer__col"><h4>COMPANY</h4><a href="#">About</a><a href="#">Sell With Us</a><a href="#">Careers</a><a href="#">Terms & Privacy</a></div>' +
       '</div>' +
