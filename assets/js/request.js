@@ -89,13 +89,28 @@
     function finish(order, saved) {
       // clear cart
       items.forEach(function () { Store.removeFromCart(0); });
-      var ref = saved && saved.id ? ('#' + String(saved.id).slice(0, 8).toUpperCase()) : '';
+      var recap = order.items.map(function (it) {
+        return '<div class="co-line"><div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
+          '<span class="co-line__name">' + esc(it.name) + '</span></div>' +
+          '<span class="co-line__price">' + money(it.price) + '</span></div>';
+      }).join('');
+      var contact = order.customer_phone || order.customer_email;
       document.querySelector('.checkout__grid').innerHTML =
-        '<div class="checkout__done"><div class="checkout__tick">✓</div>' +
-        '<h2>Request received' + (order.customer_name ? ', ' + esc(order.customer_name.split(' ')[0]) : '') + '!</h2>' +
-        '<p>Thanks — we’ll verify availability and get back to you shortly with confirmation, payment and delivery details.</p>' +
-        (ref ? '<p class="checkout__ref">Your reference: <strong>' + esc(ref) + '</strong></p>' : '') +
-        '<a href="index.html" class="btn btn--solid">CONTINUE SHOPPING</a></div>';
+        '<div class="checkout__done">' +
+          '<div class="checkout__tick">✓</div>' +
+          '<h2>Request received' + (order.customer_name ? ', ' + esc(order.customer_name.split(' ')[0]) : '') + '!</h2>' +
+          '<p class="checkout__done-sub">Thanks — your request is in. We’ll reach out at <strong>' + esc(contact) + '</strong> to confirm.</p>' +
+          '<div class="checkout__recap">' + recap +
+            '<div class="checkout__total"><span>Estimated total</span><strong>' + money(order.subtotal) + '</strong></div>' +
+          '</div>' +
+          '<div class="checkout__steps">' +
+            '<div class="cstep"><span class="cstep__n">1</span><div><strong>We verify & authenticate</strong><em>Usually within 24 hours.</em></div></div>' +
+            '<div class="cstep"><span class="cstep__n">2</span><div><strong>We confirm your order</strong><em>With payment & delivery details, by email or WhatsApp.</em></div></div>' +
+            '<div class="cstep"><span class="cstep__n">3</span><div><strong>We ship it to you</strong><em>Tracked & insured once payment clears.</em></div></div>' +
+          '</div>' +
+          '<p class="checkout__fine">Nothing is charged yet. Keep an eye on your inbox &amp; messages — we’ll be in touch shortly.</p>' +
+          '<a href="index.html" class="btn btn--solid">CONTINUE SHOPPING</a>' +
+        '</div>';
     }
 
     function showMsg(kind, text) {

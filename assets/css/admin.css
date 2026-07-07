@@ -27,6 +27,8 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+/* the [hidden] attribute must win over display:grid/flex on these panels */
+[hidden] { display: none !important; }
 body.adm {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg); color: var(--ink);
