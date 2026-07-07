@@ -408,6 +408,32 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .login__form input { border: 1px solid var(--line); padding: 13px 15px; font-size: 14px; font-family: inherit; }
 .login__form input:focus { outline: none; border-color: var(--ink); }
 .login__fine { font-size: 11px; color: var(--ink-soft); margin-top: 18px; }
+.login__msg { font-size: 13px; color: #9a1f1f; margin-top: 14px; }
+.login__msg--ok { color: #1a7a3a; }
+.login__toggle { font-size: 13px; color: var(--ink-soft); margin-top: 16px; }
+.login__toggle a { font-weight: 600; text-decoration: underline; color: var(--ink); }
+
+/* ===== My Orders (account) page ===== */
+.account-page { padding: 40px 0 80px; }
+.account-page__head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 26px; }
+.account-page__who { font-size: 13px; color: var(--ink-soft); }
+.muted-note { color: var(--ink-soft); font-size: 14px; padding: 20px 0; }
+.acct-empty { text-align: center; padding: 50px 20px; background: var(--paper); border: 1px solid var(--line); }
+.acct-empty p { color: var(--ink-soft); margin-bottom: 20px; font-size: 15px; }
+.acct-order { background: var(--paper); border: 1px solid var(--line); padding: 22px; margin-bottom: 18px; }
+.acct-order__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.acct-order__ref { font-weight: 700; font-size: 14px; letter-spacing: .04em; margin-right: 12px; }
+.acct-order__date { font-size: 13px; color: var(--ink-soft); }
+.acct-order__note { font-size: 13px; color: var(--ink-soft); margin: 10px 0 16px; }
+.acct-order__items { border-top: 1px solid var(--line); }
+.acct-order__items .co-line { padding: 12px 0; }
+.acct-badge { font-size: 11px; }
+.acct-badge--good { background: rgba(12,163,12,.14); color: #0a7a0a; }
+.acct-badge--warning { background: rgba(184,134,11,.16); color: #8a6400; }
+.acct-badge--critical { background: rgba(208,59,59,.14); color: #b02a2a; }
+.acct-badge--info { background: rgba(42,120,214,.14); color: #245fa8; }
+.acct-badge--neutral { background: rgba(82,81,78,.14); color: #52514e; }
+.acct-track { margin-top: 14px; display: inline-flex; }
 .btn--outline { border: 1.5px solid var(--ink); background: transparent; color: var(--ink); justify-content: center; }
 .btn--outline:hover { background: var(--ink); color: #fff; }
 

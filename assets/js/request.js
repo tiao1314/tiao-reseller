@@ -53,34 +53,40 @@
         return;
       }
 
-      // Submit via a direct REST call with the apikey header ONLY. We avoid the
-      // Supabase JS client here because it always adds an Authorization: Bearer
-      // header, which this project rejects for anonymous inserts (401). apikey
-      // alone resolves to the anon role and passes the "public can insert" policy.
       btn.disabled = true; btn.textContent = 'SENDING…';
 
-      function attempt(n) {
-        // NOTE: do NOT send "Prefer: return=representation". That makes Supabase
-        // read the row back after inserting, which anonymous visitors aren't
-        // allowed to do (they can insert orders but not read them), causing an
-        // RLS 401. Default (return=minimal) inserts without the read-back.
-        return fetch(CFG.SUPABASE_URL + '/rest/v1/orders', {
-          method: 'POST',
-          headers: {
-            'apikey': CFG.SUPABASE_ANON_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(order)
-        }).then(function (res) {
-          if (res.ok) { finish(order, null); return; }
-          if (n < 4) return new Promise(function (r) { setTimeout(r, 600 * n); }).then(function () { return attempt(n + 1); });
-          return res.json().catch(function () { return null; }).then(function (data) {
-            throw new Error((data && data.message) || ('HTTP ' + res.status));
-          });
-        });
+      // Direct REST insert. NEVER send "Prefer: return=representation" — that
+      // makes Supabase read the row back after insert, which guests can't do
+      // (they insert but can't read), causing a 401. If the shopper is signed
+      // in we attach their Bearer token so a DB trigger links the order to their
+      // account; if that token is stale we refresh once, else fall back to guest.
+      function doPost(bearer) {
+        var h = { 'apikey': CFG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' };
+        if (bearer) h['Authorization'] = 'Bearer ' + bearer;
+        return fetch(CFG.SUPABASE_URL + '/rest/v1/orders', { method: 'POST', headers: h, body: JSON.stringify(order) });
       }
 
-      attempt(1).catch(function (err) {
+      var auth = window.TiaoAuth;
+      var bearerP = (auth && auth.isLoggedIn()) ? auth.token().catch(function () { return null; }) : Promise.resolve(null);
+
+      bearerP.then(function (bearer) {
+        var triedRefresh = false;
+        function attempt(n) {
+          return doPost(bearer).then(function (res) {
+            if (res.ok) { finish(order, null); return; }
+            if (res.status === 401 && bearer && !triedRefresh) {
+              triedRefresh = true;
+              return auth.refresh().then(function (nt) { bearer = nt; }, function () { bearer = null; }).then(function () { return attempt(n); });
+            }
+            if (res.status === 401 && bearer) { bearer = null; return attempt(n); }   // last resort: guest order
+            if (n < 4) return new Promise(function (r) { setTimeout(r, 600 * n); }).then(function () { return attempt(n + 1); });
+            return res.json().catch(function () { return null; }).then(function (data) {
+              throw new Error((data && data.message) || ('HTTP ' + res.status));
+            });
+          });
+        }
+        return attempt(1);
+      }).catch(function (err) {
         btn.disabled = false; btn.textContent = 'SEND ORDER REQUEST';
         showMsg('err', 'Could not send: ' + (err.message || 'please try again.'));
       });

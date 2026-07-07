@@ -152,29 +152,49 @@
   }
 
   /* =================== ACCOUNT / LOGIN =================== */
+  var authMode = 'signin';   // or 'signup'
+
   function renderAccount() {
     var panel = document.querySelector('.js-account-panel');
     if (!panel) return;
-    var u = Store.getUser();
+    var auth = window.TiaoAuth;
+    var u = auth && auth.isLoggedIn() ? auth.getUser() : null;
+
     if (u) {
       panel.innerHTML = '' +
         '<button class="modal__close" data-close aria-label="Close">✕</button>' +
-        '<div class="account"><div class="account__avatar">' + (u.picture ? '<img src="' + u.picture + '" alt="">' : esc(u.name.charAt(0).toUpperCase())) + '</div>' +
-        '<h3>Hi, ' + esc(u.name) + '</h3><p>' + esc(u.email) + '</p>' +
-        '<div class="account__links"><a href="#">My Orders</a><a href="wishlist" data-open="wishlist">My Wishlist</a><a href="#">Account Settings</a></div>' +
+        '<div class="account"><div class="account__avatar">' + esc((u.email || '?').charAt(0).toUpperCase()) + '</div>' +
+        '<h3>Your account</h3><p>' + esc(u.email) + '</p>' +
+        '<div class="account__links"><a href="account.html">My Orders</a><a href="#" data-open="wishlist">My Wishlist</a></div>' +
         '<button class="btn btn--outline btn--block js-signout">SIGN OUT</button></div>';
-    } else {
-      panel.innerHTML = '' +
-        '<button class="modal__close" data-close aria-label="Close">✕</button>' +
-        '<div class="login"><span class="login__logo">tiao</span><h3>Sign in</h3><p>Access your orders, wishlist and faster checkout.</p>' +
-        '<div class="js-gbtn login__gbtn"></div>' +
-        '<div class="login__divider"><span>or</span></div>' +
-        '<form class="login__form js-email-form"><input type="email" placeholder="Email address" required aria-label="Email" />' +
-        '<input type="password" placeholder="Password" required aria-label="Password" />' +
-        '<button type="submit" class="btn btn--solid btn--block">CONTINUE</button></form>' +
-        '<p class="login__fine">By continuing you agree to tiao’s Terms & Privacy Policy.</p></div>';
-      mountGoogle();
+      return;
     }
+    if (!auth || !auth.isReady()) {
+      panel.innerHTML = '<button class="modal__close" data-close aria-label="Close">✕</button>' +
+        '<div class="login"><span class="login__logo">tiao</span><h3>Sign in</h3>' +
+        '<p>Accounts aren’t connected yet.</p></div>';
+      return;
+    }
+    var signup = authMode === 'signup';
+    panel.innerHTML = '' +
+      '<button class="modal__close" data-close aria-label="Close">✕</button>' +
+      '<div class="login"><span class="login__logo">tiao</span>' +
+      '<h3>' + (signup ? 'Create account' : 'Sign in') + '</h3>' +
+      '<p>' + (signup ? 'Join tiao to track your orders.' : 'Access your orders and faster checkout.') + '</p>' +
+      '<form class="login__form js-auth-form">' +
+        '<input type="email" name="email" placeholder="Email address" required aria-label="Email" autocomplete="email" />' +
+        '<input type="password" name="password" placeholder="Password (min 6 characters)" required minlength="6" aria-label="Password" autocomplete="' + (signup ? 'new-password' : 'current-password') + '" />' +
+        '<button type="submit" class="btn btn--solid btn--block js-auth-submit">' + (signup ? 'CREATE ACCOUNT' : 'SIGN IN') + '</button>' +
+      '</form>' +
+      '<p class="login__msg js-auth-msg" hidden></p>' +
+      '<p class="login__toggle">' + (signup ? 'Already have an account? ' : 'New to tiao? ') +
+        '<a href="#" class="js-auth-toggle">' + (signup ? 'Sign in' : 'Create an account') + '</a></p>' +
+      '<p class="login__fine">By continuing you agree to tiao’s Terms & Privacy Policy.</p></div>';
+  }
+
+  function syncStore(user) {
+    if (user) Store.signIn({ name: (user.email || 'Member').split('@')[0], email: user.email, picture: '' });
+    else Store.signOut();
   }
 
   function decodeJWT(token) {
@@ -275,22 +295,45 @@
       var rc = e.target.closest('[data-remove-cart]'); if (rc) { Store.removeFromCart(+rc.dataset.removeCart); return; }
       var rw = e.target.closest('[data-remove-wish]'); if (rw) { Store.removeFromWishlist(rw.dataset.removeWish); return; }
       var mc = e.target.closest('[data-move-cart]'); if (mc) { Store.addToCart(mc.dataset.moveCart); Store.removeFromWishlist(mc.dataset.moveCart); toast('Moved to cart'); return; }
-      if (e.target.closest('.js-signout')) { Store.signOut(); toast('Signed out'); renderAccount(); return; }
+      if (e.target.closest('.js-signout')) {
+        if (window.TiaoAuth) window.TiaoAuth.signOut();
+        syncStore(null); toast('Signed out'); renderAccount(); return;
+      }
+      if (e.target.closest('.js-auth-toggle')) {
+        e.preventDefault(); authMode = (authMode === 'signup' ? 'signin' : 'signup'); renderAccount(); return;
+      }
     });
 
     // Search input
     document.addEventListener('input', function (e) {
       if (e.target.classList.contains('js-search-input')) runSearch(e.target.value);
     });
-    // Email login (demo)
+    // Real customer auth (sign in / create account) via TiaoAuth
     document.addEventListener('submit', function (e) {
-      if (e.target.classList.contains('js-email-form')) {
-        e.preventDefault();
-        var email = e.target.querySelector('input[type=email]').value;
-        var name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-        Store.signIn({ name: name || 'Member', email: email, picture: '' });
-        toast('Signed in'); closeAll();
-      }
+      if (!e.target.classList.contains('js-auth-form')) return;
+      e.preventDefault();
+      var form = e.target, btn = form.querySelector('.js-auth-submit');
+      var msgEl = document.querySelector('.js-auth-msg');
+      var email = form.email.value.trim(), pass = form.password.value;
+      var signup = authMode === 'signup';
+      btn.disabled = true; btn.textContent = signup ? 'CREATING…' : 'SIGNING IN…';
+      if (msgEl) msgEl.hidden = true;
+
+      var done = function () { btn.disabled = false; btn.textContent = signup ? 'CREATE ACCOUNT' : 'SIGN IN'; };
+      var fail = function (m) { done(); if (msgEl) { msgEl.hidden = false; msgEl.textContent = m; } };
+
+      var op = signup ? window.TiaoAuth.signUp(email, pass) : window.TiaoAuth.signIn(email, pass);
+      op.then(function (res) {
+        if (signup && res && res.needsConfirm) {
+          done();
+          if (msgEl) { msgEl.hidden = false; msgEl.classList.add('login__msg--ok'); msgEl.textContent = 'Check your email to confirm, then sign in.'; }
+          authMode = 'signin';
+          return;
+        }
+        syncStore(window.TiaoAuth.getUser());
+        toast(signup ? 'Welcome to tiao' : 'Signed in');
+        closeAll();
+      }).catch(function (err) { fail(err.message || 'Something went wrong'); });
     });
     // Esc closes
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
