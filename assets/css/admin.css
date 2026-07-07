@@ -34,7 +34,7 @@ body.adm {
   background: var(--bg); color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
-.adm-logo { font-weight: 800; letter-spacing: .24em; padding-left: .24em; font-size: 20px; }
+.adm-logo { font-weight: 800; letter-spacing: .08em; padding-left: .08em; font-size: 19px; }
 code { background: rgba(128,128,128,.16); padding: 1px 5px; border-radius: 3px; font-size: .9em; }
 button, input, select { font-family: inherit; }
 

@@ -1,4 +1,4 @@
-// ===== tiao — admin panel (orders + dashboard) =====
+// ===== dripdrip — admin panel (orders + dashboard) =====
 (function () {
   'use strict';
 
@@ -457,7 +457,7 @@
         customer_name: f.name.value.trim(), customer_email: f.email.value.trim(),
         customer_phone: f.phone.value.trim(), note: f.note.value.trim(),
         items: picked, subtotal: picked.reduce(function (s, it) { return s + Number(it.price); }, 0),
-        status: f.status.value, ref_code: 'TIAO-' + Math.random().toString(36).slice(2, 8).toUpperCase()
+        status: f.status.value, ref_code: 'DRIP-' + Math.random().toString(36).slice(2, 8).toUpperCase()
       };
       btn.disabled = true; btn.textContent = 'CREATING…'; msg.hidden = true;
       request('POST', 'orders', { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, JSON.stringify(order))

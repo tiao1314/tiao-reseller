@@ -1,4 +1,4 @@
-// ===== tiao — order request page =====
+// ===== dripdrip — order request page =====
 (function () {
   'use strict';
 
@@ -35,7 +35,7 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = document.getElementById('reqSubmit');
-      var refCode = 'TIAO-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+      var refCode = 'DRIP-' + Math.random().toString(36).slice(2, 8).toUpperCase();
       var order = {
         customer_name: form.name.value.trim(),
         customer_email: form.email.value.trim(),

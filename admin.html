@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>tiao — Admin</title>
+  <title>dripdrip — Admin</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/admin.css?v=9" />
+  <link rel="stylesheet" href="assets/css/admin.css?v=12" />
 </head>
 <body class="adm" data-palette="#2a78d6,#1baf7a">
 
   <!-- LOGIN GATE -->
   <div id="loginGate" class="adm-login" hidden>
     <form class="adm-login__card" id="loginForm">
-      <span class="adm-logo">tiao</span>
+      <span class="adm-logo">dripdrip</span>
       <h1>Admin sign in</h1>
       <p class="adm-login__sub">Private dashboard — authorised staff only.</p>
       <label>Email<input type="email" name="email" required autocomplete="username" /></label>
@@ -28,7 +28,7 @@
   <!-- NOT-CONFIGURED NOTICE -->
   <div id="notConfigured" class="adm-notice" hidden>
     <div class="adm-notice__card">
-      <span class="adm-logo">tiao</span>
+      <span class="adm-logo">dripdrip</span>
       <h1>Connect Supabase to activate the admin panel</h1>
       <p>Add your <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in
         <code>assets/js/config.js</code>, run <code>supabase/schema.sql</code>, and create your
@@ -39,7 +39,7 @@
   <!-- DASHBOARD -->
   <div id="app" class="adm-app" hidden>
     <header class="adm-top">
-      <div class="adm-top__left"><span class="adm-logo">tiao</span><span class="adm-tag">ADMIN</span></div>
+      <div class="adm-top__left"><span class="adm-logo">dripdrip</span><span class="adm-tag">ADMIN</span></div>
       <div class="adm-top__right">
         <button class="adm-btn adm-btn--ghost" id="refreshBtn" title="Refresh">↻ Refresh</button>
         <span class="adm-user" id="admUser"></span>
@@ -108,6 +108,6 @@
   </div>
 
   <script src="assets/js/config.js?v=6"></script>
-  <script src="assets/js/admin.js?v=9"></script>
+  <script src="assets/js/admin.js?v=12"></script>
 </body>
 </html>

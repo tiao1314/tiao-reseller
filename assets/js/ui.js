@@ -1,4 +1,4 @@
-// ===== tiao — shared UI: header, footer, drawers, search, login =====
+// ===== dripdrip — shared UI: header, footer, drawers, search, login =====
 (function () {
   'use strict';
 
@@ -32,7 +32,7 @@
       '</div></div>' +
       '<div class="wrap header__inner">' +
         '<nav class="nav nav--left">' + links + '</nav>' +
-        '<a href="index.html" class="logo">tiao</a>' +
+        '<a href="index.html" class="logo">dripdrip</a>' +
         '<div class="header__actions">' +
           '<button class="icon-btn" data-open="search">' + ICONS.search + '<span>SEARCH</span></button>' +
           '<button class="icon-btn" data-open="account">' + ICONS.user + '<span class="js-login-label">LOGIN</span></button>' +
@@ -47,13 +47,13 @@
   function footerHTML() {
     return '' +
       '<div class="wrap footer__grid">' +
-        '<div class="footer__brand"><span class="logo logo--footer">tiao</span>' +
+        '<div class="footer__brand"><span class="logo logo--footer">dripdrip</span>' +
           '<p>Authenticated luxury resale. Bags, shoes, watches and accessories — verified, on-hand, ready to ship.</p></div>' +
         '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="watches.html">Watches</a><a href="accessories.html">Accessories</a></div>' +
         '<div class="footer__col"><h4>HELP</h4><a href="#">Authentication</a><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Contact</a></div>' +
         '<div class="footer__col"><h4>COMPANY</h4><a href="#">About</a><a href="#">Sell With Us</a><a href="#">Careers</a><a href="#">Terms & Privacy</a></div>' +
       '</div>' +
-      '<div class="wrap footer__bottom"><span>© 2026 tiao. All rights reserved.</span><span>Every piece independently authenticated.</span></div>';
+      '<div class="wrap footer__bottom"><span>© 2026 dripdrip. All rights reserved.</span><span>Every piece independently authenticated.</span></div>';
   }
 
   /* =================== OVERLAYS (drawers, search, login) =================== */
@@ -172,7 +172,7 @@
     }
     if (!auth || !auth.isReady()) {
       panel.innerHTML = '<button class="modal__close" data-close aria-label="Close">✕</button>' +
-        '<div class="login"><span class="login__logo">tiao</span><h3>Sign in</h3>' +
+        '<div class="login"><span class="login__logo">dripdrip</span><h3>Sign in</h3>' +
         '<p>Accounts aren’t connected yet.</p></div>';
       return;
     }
@@ -181,9 +181,9 @@
     var dIcon = '<svg viewBox="0 0 24 24" width="18" height="18" fill="#5865F2"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a18.3 18.3 0 0 1 4.34 1.35 15.6 15.6 0 0 0-11.06 0A18 18 0 0 1 12.8 3.5L12.56 3A19.7 19.7 0 0 0 7.7 4.4C4.55 9.06 3.7 13.6 4.12 18.08a19.9 19.9 0 0 0 6.06 3.06l.48-.66a13 13 0 0 1-1.9-.92l.16-.12a14.2 14.2 0 0 0 12.15 0l.16.12c-.6.36-1.24.67-1.9.92l.48.66a19.8 19.8 0 0 0 6.06-3.06c.5-5.2-.86-9.7-3.28-13.68zM9.68 15.33c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42s2.17 1.1 2.15 2.42c0 1.34-.96 2.42-2.15 2.42zm4.64 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42s2.17 1.1 2.15 2.42c0 1.34-.95 2.42-2.15 2.42z"/></svg>';
     panel.innerHTML = '' +
       '<button class="modal__close" data-close aria-label="Close">✕</button>' +
-      '<div class="login"><span class="login__logo">tiao</span>' +
+      '<div class="login"><span class="login__logo">dripdrip</span>' +
       '<h3>' + (signup ? 'Create account' : 'Sign in') + '</h3>' +
-      '<p>' + (signup ? 'Join tiao to track your orders.' : 'Access your orders and faster checkout.') + '</p>' +
+      '<p>' + (signup ? 'Join dripdrip to track your orders.' : 'Access your orders and faster checkout.') + '</p>' +
       '<div class="login__social">' +
         '<button type="button" class="login__soc" data-oauth="google">' + gIcon + 'Continue with Google</button>' +
         '<button type="button" class="login__soc" data-oauth="discord">' + dIcon + 'Continue with Discord</button>' +
@@ -195,9 +195,9 @@
         '<button type="submit" class="btn btn--solid btn--block js-auth-submit">' + (signup ? 'CREATE ACCOUNT' : 'SIGN IN') + '</button>' +
       '</form>' +
       '<p class="login__msg js-auth-msg" hidden></p>' +
-      '<p class="login__toggle">' + (signup ? 'Already have an account? ' : 'New to tiao? ') +
+      '<p class="login__toggle">' + (signup ? 'Already have an account? ' : 'New to dripdrip? ') +
         '<a href="#" class="js-auth-toggle">' + (signup ? 'Sign in' : 'Create an account') + '</a></p>' +
-      '<p class="login__fine">By continuing you agree to tiao’s Terms & Privacy Policy.</p></div>';
+      '<p class="login__fine">By continuing you agree to dripdrip’s Terms & Privacy Policy.</p></div>';
   }
 
   function syncStore(user) {
@@ -232,7 +232,7 @@
         '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>' +
         'Continue with Google</button>';
       slot.querySelector('.gbtn-demo').addEventListener('click', function () {
-        Store.signIn({ name: 'Tiao Member', email: 'member@tiao.store', picture: '' });
+        Store.signIn({ name: 'Tiao Member', email: 'member@dripdrip.store', picture: '' });
         toast('Signed in (demo)'); closeAll();
       });
     }
@@ -341,7 +341,7 @@
           return;
         }
         syncStore(window.TiaoAuth.getUser());
-        toast(signup ? 'Welcome to tiao' : 'Signed in');
+        toast(signup ? 'Welcome to dripdrip' : 'Signed in');
         closeAll();
       }).catch(function (err) { fail(err.message || 'Something went wrong'); });
     });

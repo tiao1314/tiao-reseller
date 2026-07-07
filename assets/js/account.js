@@ -1,4 +1,4 @@
-// ===== tiao — My Orders page =====
+// ===== dripdrip — My Orders page =====
 (function () {
   'use strict';
   var CFG = window.TIAO_CONFIG || {};
@@ -13,7 +13,7 @@
     accepted: { label: 'Accepted',       cls: 'good',    note: 'Confirmed! We’ll follow up with payment & delivery details.' },
     declined: { label: 'Declined',       cls: 'critical',note: 'Sorry, we couldn’t fulfil this one. Contact us for alternatives.' },
     shipped:  { label: 'Shipped',        cls: 'info',    note: 'On its way — see your tracking below.' },
-    delivered:{ label: 'Delivered',      cls: 'neutral', note: 'Delivered. Thank you for shopping with tiao.' }
+    delivered:{ label: 'Delivered',      cls: 'neutral', note: 'Delivered. Thank you for shopping with dripdrip.' }
   };
 
   function getToken() {
@@ -94,15 +94,15 @@
       '<div class="acct-guest">' +
         '<div class="acct-track">' +
           '<h2>Track your order</h2>' +
-          '<p class="muted-note">Enter the reference from your confirmation (looks like <b>TIAO-XXXXXX</b>) and the email you used at checkout.</p>' +
+          '<p class="muted-note">Enter the reference from your confirmation (looks like <b>DRIP-XXXXXX</b>) and the email you used at checkout.</p>' +
           '<form class="req-form acct-track__form" id="guestForm">' +
-            '<label>Reference<input type="text" name="ref" placeholder="TIAO-XXXXXX" required autocapitalize="characters" /></label>' +
+            '<label>Reference<input type="text" name="ref" placeholder="DRIP-XXXXXX" required autocapitalize="characters" /></label>' +
             '<label>Email<input type="email" name="email" placeholder="Email used at checkout" required autocomplete="email" /></label>' +
             '<button type="submit" class="btn btn--solid btn--block" id="guestBtn">CHECK STATUS</button>' +
           '</form>' +
           '<div id="guestResult"></div>' +
         '</div>' +
-        '<p class="acct-signin">Have a tiao account? <button class="link-inline" data-open="account">Sign in</button> to see all your orders in one place.</p>' +
+        '<p class="acct-signin">Have a dripdrip account? <button class="link-inline" data-open="account">Sign in</button> to see all your orders in one place.</p>' +
       '</div>';
     document.getElementById('guestForm').addEventListener('submit', function (e) {
       e.preventDefault();

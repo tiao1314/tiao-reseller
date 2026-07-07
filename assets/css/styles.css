@@ -79,10 +79,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .logo {
   text-align: center;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: .3em;
-  padding-left: .3em;
+  letter-spacing: .1em;
+  padding-left: .1em;
 }
 
 .header__actions { display: flex; align-items: center; justify-content: flex-end; gap: 22px; }
@@ -392,7 +392,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .modal.is-open .modal__panel { transform: none; opacity: 1; }
 .modal__close { position: absolute; top: 18px; right: 20px; font-size: 16px; color: var(--ink-soft); }
 .login { text-align: center; }
-.login__logo { font-size: 26px; font-weight: 800; letter-spacing: .28em; padding-left: .28em; display: inline-block; }
+.login__logo { font-size: 24px; font-weight: 800; letter-spacing: .1em; padding-left: .1em; display: inline-block; }
 .login h3 { font-size: 22px; font-weight: 800; margin: 18px 0 6px; }
 .login p { font-size: 13px; color: var(--ink-soft); margin-bottom: 22px; }
 .login__gbtn { display: flex; justify-content: center; min-height: 44px; }
