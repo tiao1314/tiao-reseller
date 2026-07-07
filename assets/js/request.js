@@ -60,22 +60,22 @@
       btn.disabled = true; btn.textContent = 'SENDING…';
 
       function attempt(n) {
+        // NOTE: do NOT send "Prefer: return=representation". That makes Supabase
+        // read the row back after inserting, which anonymous visitors aren't
+        // allowed to do (they can insert orders but not read them), causing an
+        // RLS 401. Default (return=minimal) inserts without the read-back.
         return fetch(CFG.SUPABASE_URL + '/rest/v1/orders', {
           method: 'POST',
           headers: {
             'apikey': CFG.SUPABASE_ANON_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify(order)
         }).then(function (res) {
+          if (res.ok) { finish(order, null); return; }
+          if (n < 4) return new Promise(function (r) { setTimeout(r, 600 * n); }).then(function () { return attempt(n + 1); });
           return res.json().catch(function () { return null; }).then(function (data) {
-            if (!res.ok) {
-              // silent retries on transient failures so we never lose an order
-              if (n < 4) return new Promise(function (r) { setTimeout(r, 600 * n); }).then(function () { return attempt(n + 1); });
-              throw new Error((data && data.message) || ('HTTP ' + res.status));
-            }
-            finish(order, Array.isArray(data) ? data[0] : data);
+            throw new Error((data && data.message) || ('HTTP ' + res.status));
           });
         });
       }
