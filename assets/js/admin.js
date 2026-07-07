@@ -547,6 +547,10 @@
         '<div class="adm-lrow"><label>Price £<input name="price" type="number" min="0" step="1" value="' + (p.price != null ? p.price : '') + '" required></label>' +
           '<label>Your cost £<input name="cost" type="number" min="0" step="1" value="' + (p.cost != null ? p.cost : '') + '"></label></div>' +
         '<label>Condition<input name="condition" value="' + esc(p.condition || 'Pre-Owned · Excellent') + '"></label>' +
+        '<div class="adm-lrow"><label>Gender<select name="gender">' +
+          ['Women', 'Men', 'Unisex'].map(function (g) { return '<option' + (g === (p.gender || 'Women') ? ' selected' : '') + '>' + g + '</option>'; }).join('') + '</select></label>' +
+          '<label>Sizes (comma-separated)<input name="sizes" value="' + esc(p.sizes || '') + '" placeholder="e.g. Small, Medium or UK 8, UK 9"></label></div>' +
+        '<label>Colours (comma-separated)<input name="colors" value="' + esc(p.colors || '') + '" placeholder="e.g. Black, Brown"></label>' +
         '<div class="adm-lrow adm-lrow--checks">' +
           '<label class="adm-check"><input type="checkbox" name="is_new"' + (p.is_new ? ' checked' : '') + '> Mark “new”</label>' +
           '<label class="adm-check"><input type="checkbox" name="active"' + (edit ? (p.active ? ' checked' : '') : ' checked') + '> Visible in store</label>' +
@@ -574,6 +578,7 @@
         category: form.category.value, brand: form.brand.value.trim(), name: form.name.value.trim(),
         price: Number(form.price.value) || 0, cost: Number(form.cost.value) || 0,
         condition: form.condition.value.trim(), badge: form.badge.value,
+        gender: form.gender.value, sizes: form.sizes.value.trim(), colors: form.colors.value.trim(),
         is_new: form.is_new.checked, img: form.img.value.trim(), active: form.active.checked
       };
       btn.disabled = true; btn.textContent = 'SAVING…'; msg.hidden = true;

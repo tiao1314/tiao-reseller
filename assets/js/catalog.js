@@ -21,11 +21,13 @@
     window.TIAO_BRANDS = brands;
   }
 
+  function toArr(v) { return Array.isArray(v) ? v : (v ? String(v).split(',').map(function (s) { return s.trim(); }).filter(Boolean) : []); }
   function map(row) {
     return {
       id: row.id, category: row.category, brand: row.brand, name: row.name,
       price: Number(row.price), condition: row.condition, badge: row.badge,
-      isNew: !!row.is_new, img: row.img
+      isNew: !!row.is_new, img: row.img,
+      gender: row.gender || '', sizes: toArr(row.sizes), colors: toArr(row.colors)
     };
   }
 
