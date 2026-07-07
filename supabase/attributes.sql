@@ -9,8 +9,10 @@ alter table public.products add column if not exists gender text default '';
 alter table public.products add column if not exists sizes  text default '';   -- comma-separated, e.g. 'UK 8, UK 9'
 alter table public.products add column if not exists colors text default '';   -- comma-separated, e.g. 'Black, Brown'
 
--- rebuild the public view to include the new columns
-create or replace view public.products_public as
+-- rebuild the public view to include the new columns.
+-- (drop first — CREATE OR REPLACE can't insert columns in the middle)
+drop view if exists public.products_public;
+create view public.products_public as
   select id, category, brand, name, price, condition, badge, is_new, img,
          gender, sizes, colors, sort_order, created_at
   from public.products
