@@ -28,7 +28,7 @@
     return '' +
       '<div class="announce"><div class="wrap announce__inner">' +
         '<span class="announce__msg">FREE UK DELIVERY OVER £250 · 100% AUTHENTICATED · WORLDWIDE SHIPPING</span>' +
-        '<nav class="announce__links"><a href="#">Track Order</a><span>|</span><a href="#">Help</a></nav>' +
+        '<nav class="announce__links"><a href="account.html">Track My Order</a><span>|</span><a href="#">Help</a></nav>' +
       '</div></div>' +
       '<div class="wrap header__inner">' +
         '<nav class="nav nav--left">' + links + '</nav>' +
@@ -89,6 +89,7 @@
         '<nav class="mobile-nav__panel">' +
           '<button class="mobile-nav__close" data-close aria-label="Close">✕</button>' +
           NAV.map(function (n) { return '<a href="' + n.href + '">' + n.label + '</a>'; }).join('') +
+          '<a href="account.html">MY ORDERS</a>' +
         '</nav></div>' +
       // Toast
       '<div class="toast js-toast" aria-live="polite"></div>';
