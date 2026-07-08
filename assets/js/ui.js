@@ -410,6 +410,12 @@
     });
 
     renderBadges();
+
+    // Once the catalogue is loaded, drop any cart items that no longer exist
+    // so the count matches what's actually in the drawer.
+    (window.TIAO_CATALOG_READY || Promise.resolve()).then(function () {
+      Store.pruneCart(); renderBadges(); renderCart();
+    });
   }
 
   // expose card renderer for page scripts

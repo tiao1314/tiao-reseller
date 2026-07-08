@@ -41,6 +41,15 @@ window.Store = (function () {
     addToCart: function (id, size) { cart.push({ id: String(id), size: size || '' }); write(KEYS.cart, cart); emit(); },
     removeFromCart: function (index) { cart.splice(index, 1); write(KEYS.cart, cart); emit(); },
     clearCart: function () { cart = []; write(KEYS.cart, cart); emit(); },
+    // Drop cart entries whose product no longer exists (e.g. items saved before
+    // the catalogue changed) so the badge can't get stuck above the drawer.
+    // Call this only AFTER the catalogue has loaded.
+    pruneCart: function () {
+      var before = cart.length;
+      cart = cart.filter(function (e) { return !!product(e.id); });
+      if (cart.length !== before) { write(KEYS.cart, cart); emit(); }
+      return before - cart.length;
+    },
 
     /* ---- wishlist ---- */
     getWishlist: function () { return wish.map(product).filter(Boolean); },
