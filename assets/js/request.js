@@ -26,11 +26,16 @@
     }).join('');
     document.getElementById('summaryTotal').textContent = money(total);
 
+    // Read fields via form.elements — `form.name` resolves to the form's own
+    // name property, not the <input name="name">, so it must not be used.
+    var F = form.elements;
+    function fval(n) { return F[n] ? F[n].value.trim() : ''; }
+
     // Pre-fill from signed-in user if available
     var user = Store.getUser && Store.getUser();
     if (user) {
-      if (user.name) form.name.value = user.name;
-      if (user.email) form.email.value = user.email;
+      if (user.name && F.name) F.name.value = user.name;
+      if (user.email && F.email) F.email.value = user.email;
     }
 
     form.addEventListener('submit', function (e) {
@@ -38,10 +43,10 @@
       var btn = document.getElementById('reqSubmit');
       var refCode = 'DRIP-' + Math.random().toString(36).slice(2, 8).toUpperCase();
       var order = {
-        customer_name: form.name.value.trim(),
-        customer_email: form.email.value.trim(),
-        customer_phone: form.phone.value.trim(),
-        note: form.note.value.trim(),
+        customer_name: fval('name'),
+        customer_email: fval('email'),
+        customer_phone: fval('phone'),
+        note: fval('note'),
         items: items.map(function (p) { return { id: p.id, brand: p.brand, name: p.name, price: p.price, img: p.img, size: p.chosenSize || '' }; }),
         subtotal: total,
         status: 'pending',
@@ -141,5 +146,9 @@
     }
   }
 
-  if (window.Store) start(); else window.addEventListener('DOMContentLoaded', start);
+  // Wait for the catalogue to load before rendering the summary, otherwise a
+  // database product in the cart isn't known yet and the page wrongly shows an
+  // empty cart / hides the form.
+  function boot() { (window.TIAO_CATALOG_READY || Promise.resolve()).then(start); }
+  if (window.Store) boot(); else window.addEventListener('DOMContentLoaded', boot);
 })();

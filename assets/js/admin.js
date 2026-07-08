@@ -496,7 +496,7 @@
       var f = e.target, btn = el('oSave'), msg = el('oMsg');
       if (!picked.length) { msg.hidden = false; msg.textContent = 'Add at least one item.'; return; }
       var order = {
-        customer_name: f.name.value.trim(), customer_email: f.email.value.trim(),
+        customer_name: f.elements.name.value.trim(), customer_email: f.email.value.trim(),
         customer_phone: f.phone.value.trim(), note: f.note.value.trim(),
         items: picked, subtotal: picked.reduce(function (s, it) { return s + Number(it.price); }, 0),
         status: f.status.value, ref_code: 'DRIP-' + Math.random().toString(36).slice(2, 8).toUpperCase()
@@ -739,7 +739,7 @@
       var btn = el('lSave'), msg = el('lMsg');
       var genderEl = form.querySelector('input[name=gender]:checked');
       var data = {
-        category: form.category.value, brand: form.brand.value.trim(), name: form.name.value.trim(),
+        category: form.category.value, brand: form.brand.value.trim(), name: form.elements.name.value.trim(),
         price: Number(form.price.value) || 0, cost: Number(form.cost.value) || 0,
         condition: form.condition.value.trim(), badge: form.badge.value,
         gender: genderEl ? genderEl.value : '', sizes: checkedVals('sizes'), colors: checkedVals('colors'),
