@@ -51,7 +51,8 @@
       // Graceful path when Supabase isn't configured yet.
       if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) {
         showMsg('info', 'Order captured locally (demo). Connect Supabase to send real order requests — see SUPABASE_SETUP.md.');
-        finish(order, null);
+        Store.clearCart();
+        finish(order);
         return;
       }
 
@@ -75,7 +76,7 @@
         var triedRefresh = false;
         function attempt(n) {
           return doPost(bearer).then(function (res) {
-            if (res.ok) { finish(order, null); return; }
+            if (res.ok) { Store.clearCart(); redirectToTracking(order); return; }
             if (res.status === 401 && bearer && !triedRefresh) {
               triedRefresh = true;
               return auth.refresh().then(function (nt) { bearer = nt; }, function () { bearer = null; }).then(function () { return attempt(n); });
@@ -94,9 +95,16 @@
       });
     });
 
-    function finish(order, saved) {
-      // clear cart
-      items.forEach(function () { Store.removeFromCart(0); });
+    // Real orders: send them straight to the tracking page for this order,
+    // carrying the reference + email so it loads immediately.
+    function redirectToTracking(order) {
+      var q = 'ref=' + encodeURIComponent(order.ref_code) +
+              '&email=' + encodeURIComponent(order.customer_email) + '&placed=1';
+      window.location.href = 'account.html?' + q;
+    }
+
+    // Demo fallback (no Supabase): show an inline confirmation recap.
+    function finish(order) {
       var recap = order.items.map(function (it) {
         return '<div class="co-line"><div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
           '<span class="co-line__name">' + esc(it.name) + '</span></div>' +

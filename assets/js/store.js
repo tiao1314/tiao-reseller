@@ -33,6 +33,7 @@ window.Store = (function () {
     cartTotal: function () { return cart.reduce(function (s, id) { var p = product(id); return s + (p ? p.price : 0); }, 0); },
     addToCart: function (id) { cart.push(String(id)); write(KEYS.cart, cart); emit(); },
     removeFromCart: function (index) { cart.splice(index, 1); write(KEYS.cart, cart); emit(); },
+    clearCart: function () { cart = []; write(KEYS.cart, cart); emit(); },
 
     /* ---- wishlist ---- */
     getWishlist: function () { return wish.map(product).filter(Boolean); },

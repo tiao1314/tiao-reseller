@@ -64,10 +64,56 @@
     }).join('');
   }
 
+  // Read ?ref=&email=&placed=1 (set right after placing an order).
+  function params() {
+    var p = {}; (location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
+      if (!kv) return; var a = kv.split('='); p[decodeURIComponent(a[0])] = decodeURIComponent((a[1] || '').replace(/\+/g, ' '));
+    }); return p;
+  }
+
+  // Just-placed order (or any ?ref=&email= deep link): load and show it directly,
+  // whether or not the shopper is signed in. Shows the exact DRIP reference.
+  function trackByRef(ref, email, justPlaced, tries) {
+    var body = el('acctBody');
+    if (justPlaced) if (el('acctWho')) el('acctWho').textContent = '';
+    fetch(REST + 'rpc/track_order', {
+      method: 'POST',
+      headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_ref: ref, p_email: email })
+    }).then(function (r) { return r.json(); }).then(function (rows) {
+      if ((!Array.isArray(rows) || !rows.length) && (tries || 0) < 3) {
+        // the row may not be queryable for a beat right after insert — retry
+        return setTimeout(function () { trackByRef(ref, email, justPlaced, (tries || 0) + 1); }, 700);
+      }
+      var banner = justPlaced
+        ? '<div class="acct-placed"><div class="checkout__tick">✓</div>' +
+            '<h2>Order request received!</h2>' +
+            '<p class="muted-note">We’ve emailed your reference to <strong>' + esc(email) + '</strong>. ' +
+            'Save it — you can track your order any time with it.</p>' +
+            '<div class="checkout__refblock"><span class="checkout__reflabel">Your reference</span>' +
+              '<strong class="checkout__refcode">' + esc(ref) + '</strong></div></div>'
+        : '';
+      if (!Array.isArray(rows) || !rows.length) {
+        body.innerHTML = banner + '<p class="muted-note">We couldn’t load the order details just yet. ' +
+          'It can take a moment — refresh in a few seconds, or <a href="account.html">track it here</a> with your reference &amp; email.</p>';
+        return;
+      }
+      body.innerHTML = banner + orderCard(rows[0], ref) +
+        '<div style="margin-top:24px"><a href="index.html" class="btn btn--solid">CONTINUE SHOPPING</a></div>';
+    }).catch(function () {
+      body.innerHTML = '<p class="muted-note">Couldn’t load that order right now. <a href="account.html">Try tracking here</a>.</p>';
+    });
+  }
+
   function start() {
     var auth = window.TiaoAuth;
     var body = el('acctBody');
     if (!auth || !auth.isReady()) { body.innerHTML = '<p class="muted-note">Accounts aren’t connected yet.</p>'; return; }
+
+    // Deep-linked / just-placed order takes priority over the normal views.
+    var q = params();
+    if (q.ref && q.email) { trackByRef(q.ref.toUpperCase(), q.email, q.placed === '1', 0); return; }
+
     if (!auth.isLoggedIn()) {
       renderGuest(body);
       return;

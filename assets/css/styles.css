@@ -639,6 +639,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .checkout__refcode { font-size: 24px; font-weight: 800; letter-spacing: .06em; }
 .checkout__refhint { font-size: 12px; color: var(--ink-soft); }
 .checkout__refhint a { text-decoration: underline; font-weight: 600; }
+.acct-placed { text-align: center; padding: 40px 20px 28px; background: var(--paper); border: 1px solid var(--line); margin-bottom: 26px; }
+.acct-placed h2 { font-size: 26px; font-weight: 900; margin-bottom: 10px; }
+.acct-placed .muted-note { max-width: 440px; margin: 0 auto 18px; }
 .acct-signin { margin-bottom: 30px; font-size: 14px; color: var(--ink-soft); }
 .link-inline { background: none; border: none; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; font-weight: 600; cursor: pointer; }
 .acct-track { max-width: 460px; background: var(--paper); border: 1px solid var(--line); padding: 26px; }
