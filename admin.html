@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/admin.css?v=14" />
+  <link rel="stylesheet" href="assets/css/admin.css?v=15" />
 </head>
 <body class="adm" data-palette="#2a78d6,#1baf7a">
 
@@ -52,6 +52,7 @@
     <nav class="adm-tabs">
       <button class="adm-tab is-active" data-view="dashboard">Dashboard</button>
       <button class="adm-tab" data-view="listings">Listings</button>
+      <button class="adm-tab" data-view="broadcast">Broadcast</button>
       <button class="adm-tab" data-view="activity">Activity</button>
     </nav>
 
@@ -102,6 +103,29 @@
         </section>
       </div>
 
+      <div id="viewBroadcast" hidden>
+        <section class="adm-card adm-broadcast">
+          <div class="adm-card__head">
+            <h2>Send news to subscribers</h2>
+            <span class="adm-muted adm-sm" id="bcCount">…</span>
+          </div>
+          <form id="broadcastForm" class="adm-lform">
+            <label>Subject
+              <input name="subject" required placeholder="e.g. New drop just landed 🖤" />
+            </label>
+            <label>Message
+              <textarea name="message" rows="9" required placeholder="Write your announcement here. Line breaks are kept. It goes out under the dripdrip header with a SHOP NOW button."></textarea>
+            </label>
+            <p class="adm-muted adm-sm">Sends to everyone on your newsletter list, from hello@dripdrip.store.</p>
+            <p class="adm-lmsg" id="bcMsg" hidden></p>
+            <div class="adm-lactions">
+              <button type="button" class="adm-btn adm-btn--ghost" id="bcTest">Send test to me</button>
+              <button type="submit" class="adm-btn adm-btn--solid" id="bcSend">SEND TO ALL</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
       <div id="viewActivity" hidden>
         <section class="adm-card">
           <div class="adm-card__head">
@@ -134,6 +158,6 @@
   </div>
 
   <script src="assets/js/config.js?v=6"></script>
-  <script src="assets/js/admin.js?v=14"></script>
+  <script src="assets/js/admin.js?v=15"></script>
 </body>
 </html>

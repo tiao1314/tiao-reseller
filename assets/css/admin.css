@@ -107,8 +107,10 @@ button, input, select { font-family: inherit; }
 .adm-lmodal__panel h3 { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
 .adm-lform { display: flex; flex-direction: column; gap: 14px; }
 .adm-lform label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
-.adm-lform input:not([type=checkbox]), .adm-lform select { padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--ink); font-size: 14px; font-family: inherit; }
-.adm-lform input:focus, .adm-lform select:focus { outline: none; border-color: var(--rev); }
+.adm-lform input:not([type=checkbox]), .adm-lform select, .adm-lform textarea { padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--ink); font-size: 14px; font-family: inherit; }
+.adm-lform textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
+.adm-lform input:focus, .adm-lform select:focus, .adm-lform textarea:focus { outline: none; border-color: var(--rev); }
+.adm-broadcast .adm-lform { max-width: 620px; }
 .adm-lrow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .adm-lrow--checks { grid-template-columns: 1fr 1fr; }
 .adm-check { flex-direction: row !important; align-items: center; gap: 8px !important; font-size: 13px !important; color: var(--ink) !important; }

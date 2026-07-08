@@ -526,10 +526,62 @@
   function switchView(v) {
     el('viewDashboard').hidden = v !== 'dashboard';
     el('viewListings').hidden = v !== 'listings';
+    el('viewBroadcast').hidden = v !== 'broadcast';
     el('viewActivity').hidden = v !== 'activity';
     document.querySelectorAll('.adm-tab').forEach(function (t) { t.classList.toggle('is-active', t.dataset.view === v); });
     if (v === 'listings' && !listingsLoaded) loadListings();
+    if (v === 'broadcast') loadBroadcast();
     if (v === 'activity') loadActivity();
+  }
+
+  /* ---- broadcast (email the newsletter list) ---- */
+  var broadcastWired = false;
+  function loadBroadcast() {
+    // show how many people are on the list
+    apiGet('subscribers?select=email').then(function (rows) {
+      var n = Array.isArray(rows) ? rows.length : 0;
+      el('bcCount').textContent = n + ' subscriber' + (n === 1 ? '' : 's');
+    }).catch(function () { el('bcCount').textContent = ''; });
+
+    if (broadcastWired) return; broadcastWired = true;
+    el('bcTest').addEventListener('click', function () { sendBroadcast(true); });
+    el('broadcastForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var f = e.target;
+      confirmAction('Send this email to every subscriber? This can’t be undone.', function () {
+        sendBroadcast(false);
+      }, 'Send to all');
+    });
+  }
+
+  function sendBroadcast(test) {
+    var f = el('broadcastForm'), msg = el('bcMsg');
+    var sendBtn = el('bcSend'), testBtn = el('bcTest');
+    var subject = f.subject.value.trim(), message = f.message.value.trim();
+    msg.hidden = true; msg.className = 'adm-lmsg';
+    if (!subject || !message) { msg.hidden = false; msg.textContent = 'Add a subject and a message first.'; return; }
+
+    var btn = test ? testBtn : sendBtn;
+    var orig = btn.textContent; btn.disabled = true; btn.textContent = test ? 'SENDING TEST…' : 'SENDING…';
+
+    fetch(CFG.SUPABASE_URL + '/functions/v1/broadcast-email', {
+      method: 'POST',
+      headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject: subject, message: message, test: !!test })
+    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        btn.disabled = false; btn.textContent = orig;
+        var d = res.d || {};
+        if (!res.ok || d.error) { msg.hidden = false; msg.textContent = d.error || 'Send failed.'; return; }
+        if (test) { toast('Test sent to ' + userEmail); return; }
+        if (!d.sent) { msg.hidden = false; msg.textContent = d.note || 'No one was emailed.'; return; }
+        toast('Sent to ' + d.sent + ' of ' + d.total + ' subscribers');
+        logAction('broadcast.send', 'Emailed ' + d.sent + ' subscribers · “' + subject + '”');
+        f.reset();
+      }).catch(function (err) {
+        btn.disabled = false; btn.textContent = orig;
+        msg.hidden = false; msg.textContent = 'Network error: ' + err.message;
+      });
   }
 
   /* ---- activity log view ---- */
@@ -544,7 +596,8 @@
   }
   var ACTION_LABEL = {
     'order.status': 'Order status', 'order.tracking': 'Tracking', 'order.create': 'Order created',
-    'order.delete': 'Order deleted', 'listing.add': 'Listing added', 'listing.edit': 'Listing edited', 'listing.delete': 'Listing deleted'
+    'order.delete': 'Order deleted', 'listing.add': 'Listing added', 'listing.edit': 'Listing edited', 'listing.delete': 'Listing deleted',
+    'broadcast.send': 'Newsletter sent'
   };
   function renderActivity(rows) {
     if (!rows.length) { el('activityList').innerHTML = '<p class="adm-empty">No activity yet.</p>'; return; }

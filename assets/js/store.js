@@ -17,8 +17,11 @@ window.Store = (function () {
 
   function emit() { listeners.forEach(function (fn) { fn(); }); }
 
+  // IDs may be strings ("b1") from the seed data or numbers from the database,
+  // while dataset.id is always a string — so compare everything as strings.
+  function sameId(a, b) { return String(a) === String(b); }
   function product(id) {
-    return (window.TIAO_PRODUCTS || []).find(function (p) { return p.id === id; });
+    return (window.TIAO_PRODUCTS || []).find(function (p) { return sameId(p.id, id); });
   }
 
   return {
@@ -28,21 +31,22 @@ window.Store = (function () {
     getCart: function () { return cart.map(product).filter(Boolean); },
     cartCount: function () { return cart.length; },
     cartTotal: function () { return cart.reduce(function (s, id) { var p = product(id); return s + (p ? p.price : 0); }, 0); },
-    addToCart: function (id) { cart.push(id); write(KEYS.cart, cart); emit(); },
+    addToCart: function (id) { cart.push(String(id)); write(KEYS.cart, cart); emit(); },
     removeFromCart: function (index) { cart.splice(index, 1); write(KEYS.cart, cart); emit(); },
 
     /* ---- wishlist ---- */
     getWishlist: function () { return wish.map(product).filter(Boolean); },
     wishCount: function () { return wish.length; },
-    inWishlist: function (id) { return wish.indexOf(id) !== -1; },
+    inWishlist: function (id) { return wish.some(function (w) { return sameId(w, id); }); },
     toggleWishlist: function (id) {
-      var i = wish.indexOf(id);
+      id = String(id);
+      var i = wish.findIndex(function (w) { return sameId(w, id); });
       if (i === -1) wish.push(id); else wish.splice(i, 1);
       write(KEYS.wish, wish); emit();
       return wish.indexOf(id) !== -1;
     },
     removeFromWishlist: function (id) {
-      var i = wish.indexOf(id);
+      var i = wish.findIndex(function (w) { return sameId(w, id); });
       if (i !== -1) { wish.splice(i, 1); write(KEYS.wish, wish); emit(); }
     },
 
