@@ -32,7 +32,7 @@
         '<nav class="nav nav--left">' + links + '</nav>' +
         '<a href="index.html" class="logo drip-logo" aria-label="dripdrip">' +
           '<span class="drip-logo__text">dripdrip</span>' +
-          '<i class="drip drip--1"></i><i class="drip drip--2"></i><i class="drip drip--3"></i></a>' +
+          '<i class="drip drip--1"></i><i class="drip drip--2"></i><i class="drip drip--3"></i><i class="drip drip--4"></i></a>' +
         '<div class="header__actions">' +
           '<button class="icon-btn" data-open="search">' + ICONS.search + '<span>SEARCH</span></button>' +
           '<button class="icon-btn" data-open="account">' + ICONS.user + '<span class="js-login-label">LOGIN</span></button>' +
@@ -49,7 +49,7 @@
       '<div class="wrap footer__grid">' +
         '<div class="footer__brand"><span class="drip-logo drip-logo--footer">' +
           '<span class="drip-logo__text">dripdrip</span>' +
-          '<i class="drip drip--1"></i><i class="drip drip--2"></i><i class="drip drip--3"></i></span>' +
+          '<i class="drip drip--1"></i><i class="drip drip--2"></i><i class="drip drip--3"></i><i class="drip drip--4"></i></span>' +
           '<p>Authenticated luxury resale. Bags and shoes — verified, on-hand, ready to ship.</p></div>' +
         '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="account.html">Track Order</a><a href="request.html">Request</a></div>' +
         '<div class="footer__col"><h4>HELP</h4><a href="#">Authentication</a><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Contact</a></div>' +
@@ -104,7 +104,8 @@
         '<div class="card__media">' +
           '<span class="card__badge' + (p.isNew ? ' card__badge--new' : '') + '">' + esc(p.badge) + '</span>' +
           '<button class="card__wish' + (Store.inWishlist(p.id) ? ' is-active' : '') + '" data-wish aria-label="Wishlist">' + ICONS.heart + '</button>' +
-          '<img src="' + p.img + '" alt="' + esc(p.brand + ' ' + p.name) + '" loading="lazy" />' +
+          ((p.images && p.images.length > 1) ? '<img class="card__img card__img--alt" src="' + p.images[1] + '" alt="" loading="lazy" />' : '') +
+          '<img class="card__img card__img--main" src="' + p.img + '" alt="' + esc(p.brand + ' ' + p.name) + '" loading="lazy" />' +
           '<button class="card__add" data-add>ADD TO CART</button>' +
         '</div>' +
         '<div class="card__body">' +

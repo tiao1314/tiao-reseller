@@ -76,6 +76,32 @@
   function money(n) { return '£' + Math.round(n).toLocaleString('en-GB'); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
 
+  // ---- toast + in-page confirm (replaces browser alert/confirm) ----
+  var toastTimer;
+  function toast(msg, kind) {
+    var t = el('admToast'); if (!t) { return; }
+    t.textContent = msg; t.className = 'adm-toast is-show' + (kind ? ' adm-toast--' + kind : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = 'adm-toast'; }, 2800);
+  }
+  function confirmAction(msg, onOk, okLabel) {
+    var box = el('admConfirm'), m = el('admConfirmMsg'), ok = el('admConfirmOk');
+    if (!box) { if (window.confirm(msg)) onOk(); return; }   // fallback
+    m.textContent = msg; ok.textContent = okLabel || 'Confirm';
+    box.hidden = false;
+    function cleanup() { box.hidden = true; ok.onclick = null; box.querySelectorAll('[data-cno]').forEach(function (b) { b.onclick = null; }); }
+    ok.onclick = function () { cleanup(); onOk(); };
+    box.querySelectorAll('[data-cno]').forEach(function (b) { b.onclick = cleanup; });
+  }
+
+  // ---- activity log: records who did what, when (fails silently if table absent) ----
+  function logAction(action, detail) {
+    request('POST', 'activity_log', { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      JSON.stringify({ actor_email: userEmail, action: action, detail: detail || '' }))
+      .then(function () { if (activityLoaded) loadActivity(); })
+      .catch(function () {});
+  }
+
   var state = { orders: [], costs: {}, filter: 'all' };
 
   /* ---------------- boot ---------------- */
@@ -382,17 +408,24 @@
   function update(id, patch, quiet) {
     // optimistic local update
     var o = state.orders.find(function (x) { return String(x.id) === String(id); });
+    var who = o ? o.customer_name : id;
     if (o) Object.assign(o, patch);
     if (!quiet) renderAll(); else { renderTiles(); renderChart(); }
-    apiPatch('orders?id=eq.' + encodeURIComponent(id), patch).catch(function (err) { console.error(err); loadData(); });
+    apiPatch('orders?id=eq.' + encodeURIComponent(id), patch).then(function () {
+      if (patch.status) logAction('order.status', 'Set ' + who + '’s order to ' + patch.status);
+      else if (patch.tracking_url !== undefined) logAction('order.tracking', 'Updated tracking for ' + who + '’s order');
+    }).catch(function (err) { console.error(err); loadData(); });
   }
 
   function deleteOrder(id) {
-    if (!window.confirm('Delete this order permanently? This cannot be undone.')) return;
-    request('DELETE', 'orders?id=eq.' + encodeURIComponent(id)).then(function () {
-      state.orders = state.orders.filter(function (o) { return String(o.id) !== String(id); });
-      renderAll();
-    }).catch(function (err) { alert('Delete failed: ' + err.message); });
+    var o = state.orders.find(function (x) { return String(x.id) === String(id); });
+    confirmAction('Delete this order permanently? This cannot be undone.', function () {
+      request('DELETE', 'orders?id=eq.' + encodeURIComponent(id)).then(function () {
+        logAction('order.delete', 'Deleted order ' + (o ? (o.customer_name + ' · ' + money(o.subtotal)) : id));
+        state.orders = state.orders.filter(function (x) { return String(x.id) !== String(id); });
+        renderAll(); toast('Order deleted');
+      }).catch(function (err) { toast('Delete failed: ' + err.message, 'err'); });
+    }, 'Delete');
   }
 
   /* ---- manually add an order ---- */
@@ -461,14 +494,19 @@
       };
       btn.disabled = true; btn.textContent = 'CREATING…'; msg.hidden = true;
       request('POST', 'orders', { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, JSON.stringify(order))
-        .then(function () { closeListingModal(); loadData(); })
+        .then(function () { logAction('order.create', 'Created order for ' + order.customer_name + ' · ' + money(order.subtotal)); closeListingModal(); loadData(); toast('Order created'); })
         .catch(function (err) { btn.disabled = false; btn.textContent = 'CREATE ORDER'; msg.hidden = false; msg.textContent = err.message || 'Could not create'; });
     });
   }
 
   /* ================= LISTINGS ================= */
-  var CATEGORIES = ['bags', 'shoes', 'watches', 'accessories'];
+  var CATEGORIES = ['bags', 'shoes'];
   var BADGES = ['ON HAND', 'NEW IN', 'AUTHENTICATED'];
+  var GENDERS = ['Women', 'Men', 'Unisex'];
+  var BAG_SIZES = ['Mini', 'Small', 'Medium', 'Large'];
+  var SHOE_SIZES = ['UK 3', 'UK 4', 'UK 5', 'UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11', 'UK 12'];
+  var COLOURS = ['Black', 'White', 'Brown', 'Beige', 'Grey', 'Blue', 'Green', 'Red', 'Pink', 'Gold', 'Silver', 'Multi'];
+  function csvToArr(v) { return (v || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean); }
   var products = [];
   var listingsLoaded = false;
 
@@ -488,8 +526,37 @@
   function switchView(v) {
     el('viewDashboard').hidden = v !== 'dashboard';
     el('viewListings').hidden = v !== 'listings';
+    el('viewActivity').hidden = v !== 'activity';
     document.querySelectorAll('.adm-tab').forEach(function (t) { t.classList.toggle('is-active', t.dataset.view === v); });
     if (v === 'listings' && !listingsLoaded) loadListings();
+    if (v === 'activity') loadActivity();
+  }
+
+  /* ---- activity log view ---- */
+  var activityLoaded = false;
+  function loadActivity() {
+    activityLoaded = true;
+    apiGet('activity_log?select=*&order=created_at.desc&limit=200').then(function (rows) {
+      renderActivity(Array.isArray(rows) ? rows : []);
+    }).catch(function (err) {
+      el('activityList').innerHTML = '<p class="adm-empty">Couldn’t load the log: ' + esc(err.message) + '<br><span class="adm-sm">Run supabase/activity_log.sql to enable it.</span></p>';
+    });
+  }
+  var ACTION_LABEL = {
+    'order.status': 'Order status', 'order.tracking': 'Tracking', 'order.create': 'Order created',
+    'order.delete': 'Order deleted', 'listing.add': 'Listing added', 'listing.edit': 'Listing edited', 'listing.delete': 'Listing deleted'
+  };
+  function renderActivity(rows) {
+    if (!rows.length) { el('activityList').innerHTML = '<p class="adm-empty">No activity yet.</p>'; return; }
+    el('activityList').innerHTML = rows.map(function (r) {
+      var d = new Date(r.created_at);
+      var when = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      return '<div class="adm-act">' +
+        '<span class="adm-act__tag">' + esc(ACTION_LABEL[r.action] || r.action) + '</span>' +
+        '<span class="adm-act__detail">' + esc(r.detail || '') + '</span>' +
+        '<span class="adm-act__meta">' + esc((r.actor_email || 'unknown').split('@')[0]) + ' · ' + when + '</span>' +
+      '</div>';
+    }).join('');
   }
 
   function loadListings() {
@@ -532,25 +599,33 @@
   function openListingForm(p) {
     var edit = !!p; p = p || {};
     var opt = function (arr, sel) { return arr.map(function (v) { return '<option' + (v === sel ? ' selected' : '') + '>' + v + '</option>'; }).join(''); };
+    var imgs = p.images ? csvToArr(p.images) : (p.img ? [p.img] : []);
+    var selSizes = csvToArr(p.sizes), selColors = csvToArr(p.colors), selGender = p.gender || 'Women';
+
+    function ticks(name, opts, selected, type) {
+      return opts.map(function (v) {
+        var on = selected.indexOf(v) !== -1;
+        return '<label class="adm-tick' + (on ? ' is-on' : '') + '"><input type="' + type + '" name="' + name + '" value="' + esc(v) + '"' + (on ? ' checked' : '') + '>' + esc(v) + '</label>';
+      }).join('');
+    }
+
     el('listingModalBody').innerHTML =
       '<button class="adm-lmodal__close" data-lclose>✕</button>' +
       '<h3>' + (edit ? 'Edit listing' : 'Add listing') + '</h3>' +
       '<form id="listingForm" class="adm-lform">' +
-        '<div class="adm-lupload"><div class="adm-lupload__preview" id="lPreview"' + (p.img ? ' style="background-image:url(\'' + esc(p.img) + '\')"' : '') + '></div>' +
-          '<label class="adm-btn adm-btn--ghost adm-lupload__btn">Upload photo<input type="file" id="lImage" accept="image/*" hidden></label>' +
-          '<span class="adm-muted adm-sm" id="lUploadMsg">JPG/PNG, or paste a URL below</span></div>' +
-        '<label>Image URL<input name="img" value="' + esc(p.img || '') + '" placeholder="https://…"></label>' +
-        '<div class="adm-lrow"><label>Category<select name="category">' + opt(CATEGORIES, p.category) + '</select></label>' +
+        '<div class="adm-lfield"><span class="adm-lbl">Photos <span class="adm-muted">(first is the cover; hover swaps to the second)</span></span>' +
+          '<div class="adm-thumbs" id="lImgs"></div>' +
+          '<span class="adm-muted adm-sm" id="lUploadMsg">JPG/PNG — you can select several at once</span></div>' +
+        '<div class="adm-lrow"><label>Category<select name="category" id="lCat">' + opt(CATEGORIES, p.category || 'bags') + '</select></label>' +
           '<label>Badge<select name="badge">' + opt(BADGES, p.badge) + '</select></label></div>' +
         '<label>Brand<input name="brand" value="' + esc(p.brand || '') + '" required placeholder="e.g. CHANEL"></label>' +
         '<label>Name<input name="name" value="' + esc(p.name || '') + '" required placeholder="e.g. Classic Flap Medium"></label>' +
         '<div class="adm-lrow"><label>Price £<input name="price" type="number" min="0" step="1" value="' + (p.price != null ? p.price : '') + '" required></label>' +
           '<label>Your cost £<input name="cost" type="number" min="0" step="1" value="' + (p.cost != null ? p.cost : '') + '"></label></div>' +
-        '<label>Condition<input name="condition" value="' + esc(p.condition || 'Pre-Owned · Excellent') + '"></label>' +
-        '<div class="adm-lrow"><label>Gender<select name="gender">' +
-          ['Women', 'Men', 'Unisex'].map(function (g) { return '<option' + (g === (p.gender || 'Women') ? ' selected' : '') + '>' + g + '</option>'; }).join('') + '</select></label>' +
-          '<label>Sizes (comma-separated)<input name="sizes" value="' + esc(p.sizes || '') + '" placeholder="e.g. Small, Medium or UK 8, UK 9"></label></div>' +
-        '<label>Colours (comma-separated)<input name="colors" value="' + esc(p.colors || '') + '" placeholder="e.g. Black, Brown"></label>' +
+        '<label>Condition<input name="condition" value="' + esc(p.condition || 'Brand New · Boxed') + '"></label>' +
+        '<div class="adm-lfield"><span class="adm-lbl">Gender</span><div class="adm-ticks">' + ticks('gender', GENDERS, [selGender], 'radio') + '</div></div>' +
+        '<div class="adm-lfield"><span class="adm-lbl">Sizes</span><div class="adm-ticks" id="lSizes">' + ticks('sizes', (p.category === 'shoes' ? SHOE_SIZES : BAG_SIZES), selSizes, 'checkbox') + '</div></div>' +
+        '<div class="adm-lfield"><span class="adm-lbl">Colours</span><div class="adm-ticks">' + ticks('colors', COLOURS, selColors, 'checkbox') + '</div></div>' +
         '<div class="adm-lrow adm-lrow--checks">' +
           '<label class="adm-check"><input type="checkbox" name="is_new"' + (p.is_new ? ' checked' : '') + '> Mark “new”</label>' +
           '<label class="adm-check"><input type="checkbox" name="active"' + (edit ? (p.active ? ' checked' : '') : ' checked') + '> Visible in store</label>' +
@@ -560,30 +635,59 @@
       '</form>';
     el('listingModal').hidden = false;
 
-    var form = el('listingForm'), fileInput = el('lImage'), preview = el('lPreview');
-    fileInput.addEventListener('change', function () {
-      var f = fileInput.files[0]; if (!f) return;
-      el('lUploadMsg').textContent = 'Uploading…';
-      uploadImage(f).then(function (url) {
-        form.img.value = url; preview.style.backgroundImage = 'url(\'' + url + '\')';
-        el('lUploadMsg').textContent = 'Uploaded ✓';
-      }).catch(function (err) { el('lUploadMsg').textContent = 'Upload failed: ' + err.message; });
+    var form = el('listingForm');
+
+    function renderImgs() {
+      el('lImgs').innerHTML = imgs.map(function (u, i) {
+        return '<div class="adm-thumb' + (i === 0 ? ' is-cover' : '') + '" style="background-image:url(\'' + esc(u) + '\')">' +
+          (i === 0 ? '<span class="adm-thumb__tag">Cover</span>' : '') +
+          '<button type="button" class="adm-thumb__x" data-rmimg="' + i + '" title="Remove">✕</button></div>';
+      }).join('') + '<label class="adm-thumb adm-thumb--add" title="Add photo"><span>+</span><input type="file" id="lImage" accept="image/*" multiple hidden></label>';
+      el('lImgs').querySelectorAll('[data-rmimg]').forEach(function (b) {
+        b.addEventListener('click', function () { imgs.splice(+b.dataset.rmimg, 1); renderImgs(); });
+      });
+      el('lImage').addEventListener('change', function () {
+        var files = Array.prototype.slice.call(el('lImage').files); if (!files.length) return;
+        el('lUploadMsg').textContent = 'Uploading ' + files.length + ' photo' + (files.length > 1 ? 's' : '') + '…';
+        Promise.all(files.map(function (f) { return uploadImage(f); })).then(function (urls) {
+          urls.forEach(function (u) { imgs.push(u); });
+          renderImgs(); el('lUploadMsg').textContent = 'Uploaded ✓';
+        }).catch(function (err) { el('lUploadMsg').textContent = 'Upload failed: ' + err.message; });
+      });
+    }
+    renderImgs();
+
+    // category change → swap the size options (bags vs shoes)
+    el('lCat').addEventListener('change', function () {
+      el('lSizes').innerHTML = ticks('sizes', (el('lCat').value === 'shoes' ? SHOE_SIZES : BAG_SIZES), [], 'checkbox');
     });
-    form.img.addEventListener('input', function () { preview.style.backgroundImage = form.img.value ? 'url(\'' + form.img.value + '\')' : ''; });
+    // reflect tick state visually
+    form.addEventListener('change', function (e) {
+      var lbl = e.target.closest('.adm-tick'); if (!lbl) return;
+      if (e.target.type === 'radio') form.querySelectorAll('.adm-tick').forEach(function (l) { if (l.querySelector('input[name=gender]')) l.classList.toggle('is-on', l.querySelector('input').checked); });
+      else lbl.classList.toggle('is-on', e.target.checked);
+    });
+
+    function checkedVals(name) {
+      return Array.prototype.slice.call(form.querySelectorAll('input[name=' + name + ']:checked')).map(function (i) { return i.value; }).join(', ');
+    }
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = el('lSave'), msg = el('lMsg');
+      var genderEl = form.querySelector('input[name=gender]:checked');
       var data = {
         category: form.category.value, brand: form.brand.value.trim(), name: form.name.value.trim(),
         price: Number(form.price.value) || 0, cost: Number(form.cost.value) || 0,
         condition: form.condition.value.trim(), badge: form.badge.value,
-        gender: form.gender.value, sizes: form.sizes.value.trim(), colors: form.colors.value.trim(),
-        is_new: form.is_new.checked, img: form.img.value.trim(), active: form.active.checked
+        gender: genderEl ? genderEl.value : '', sizes: checkedVals('sizes'), colors: checkedVals('colors'),
+        is_new: form.is_new.checked, active: form.active.checked,
+        img: imgs[0] || '', images: imgs.join(',')
       };
       btn.disabled = true; btn.textContent = 'SAVING…'; msg.hidden = true;
       saveListing(data, edit ? p.id : null).then(function () {
-        closeListingModal(); listingsLoaded = false; loadListings();
+        logAction(edit ? 'listing.edit' : 'listing.add', (edit ? 'Edited' : 'Added') + ' listing ' + data.brand + ' ' + data.name);
+        closeListingModal(); listingsLoaded = false; loadListings(); toast(edit ? 'Listing saved' : 'Listing added');
       }).catch(function (err) {
         btn.disabled = false; btn.textContent = edit ? 'SAVE CHANGES' : 'ADD LISTING';
         msg.hidden = false; msg.textContent = err.message || 'Could not save';
@@ -599,11 +703,14 @@
   }
 
   function deleteListing(id) {
-    if (!window.confirm('Delete this listing? This cannot be undone.')) return;
-    request('DELETE', 'products?id=eq.' + encodeURIComponent(id)).then(function () {
-      products = products.filter(function (p) { return String(p.id) !== String(id); });
-      renderListings();
-    }).catch(function (err) { alert('Delete failed: ' + err.message); });
+    var p = products.find(function (x) { return String(x.id) === String(id); });
+    confirmAction('Delete this listing? This cannot be undone.', function () {
+      request('DELETE', 'products?id=eq.' + encodeURIComponent(id)).then(function () {
+        logAction('listing.delete', 'Deleted listing ' + (p ? (p.brand + ' ' + p.name) : id));
+        products = products.filter(function (x) { return String(x.id) !== String(id); });
+        renderListings(); toast('Listing deleted');
+      }).catch(function (err) { toast('Delete failed: ' + err.message, 'err'); });
+    }, 'Delete');
   }
 
   // Upload an image to Supabase Storage; refresh the token once on 401.
