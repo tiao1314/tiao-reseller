@@ -20,6 +20,19 @@
     { label: 'SHOES', href: 'shoes.html' }
   ];
 
+  // dripping wordmark — anchor + falling blobs merged by an SVG goo filter
+  function dripLogo() {
+    var pos = [16, 39, 61, 83], delay = [0.2, 1.5, 2.6, 3.4];
+    var blobs = pos.map(function (x, i) {
+      return '<i class="blob blob--a" style="left:' + x + '%"></i>' +
+             '<i class="blob blob--f" style="left:' + x + '%;animation-delay:' + delay[i] + 's"></i>';
+    }).join('');
+    return '<span class="drip-logo__text">dripdrip</span><span class="goo">' + blobs + '</span>';
+  }
+  var GOO_SVG = '<svg class="goo-defs" width="0" height="0" aria-hidden="true" focusable="false">' +
+    '<defs><filter id="goo-filter"><feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="b"/>' +
+    '<feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -11"/></filter></defs></svg>';
+
   /* =================== HEADER =================== */
   function headerHTML() {
     var links = NAV.map(function (n) { return '<a href="' + n.href + '" class="nav__link">' + n.label + '</a>'; }).join('');
@@ -30,9 +43,7 @@
       '</div></div>' +
       '<div class="wrap header__inner">' +
         '<nav class="nav nav--left">' + links + '</nav>' +
-        '<a href="index.html" class="logo drip-logo" aria-label="dripdrip">' +
-          '<span class="drip-logo__text">dripdrip</span>' +
-          '<i class="drip drip--1"></i><i class="drip drip--2"></i><i class="drip drip--3"></i><i class="drip drip--4"></i></a>' +
+        '<a href="index.html" class="logo drip-logo" aria-label="dripdrip">' + dripLogo() + '</a>' +
         '<div class="header__actions">' +
           '<button class="icon-btn" data-open="search">' + ICONS.search + '<span>SEARCH</span></button>' +
           '<button class="icon-btn" data-open="account">' + ICONS.user + '<span class="js-login-label">LOGIN</span></button>' +
@@ -47,9 +58,7 @@
   function footerHTML() {
     return '' +
       '<div class="wrap footer__grid">' +
-        '<div class="footer__brand"><span class="drip-logo drip-logo--footer">' +
-          '<span class="drip-logo__text">dripdrip</span>' +
-          '<i class="drip drip--1"></i><i class="drip drip--2"></i><i class="drip drip--3"></i><i class="drip drip--4"></i></span>' +
+        '<div class="footer__brand"><span class="drip-logo drip-logo--footer">' + dripLogo() + '</span>' +
           '<p>Authenticated luxury resale. Bags and shoes — verified, on-hand, ready to ship.</p></div>' +
         '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="account.html">Track Order</a><a href="request.html">Request</a></div>' +
         '<div class="footer__col"><h4>HELP</h4><a href="#">Authentication</a><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Contact</a></div>' +
@@ -94,7 +103,9 @@
           '<a href="account.html">MY ORDERS</a>' +
         '</nav></div>' +
       // Toast
-      '<div class="toast js-toast" aria-live="polite"></div>';
+      '<div class="toast js-toast" aria-live="polite"></div>' +
+      // SVG goo filter for the dripping logo
+      GOO_SVG;
   }
 
   /* =================== PRODUCT CARD (shared) =================== */
