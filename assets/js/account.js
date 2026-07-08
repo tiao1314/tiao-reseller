@@ -16,6 +16,31 @@
     delivered:{ label: 'Delivered',      cls: 'neutral', note: 'Delivered. Thank you for shopping with dripdrip.' }
   };
 
+  // Visual progress so the customer sees exactly where their order is.
+  var FLOW = [
+    { key: 'pending',   label: 'Requested' },
+    { key: 'accepted',  label: 'Confirmed' },
+    { key: 'shipped',   label: 'Shipped' },
+    { key: 'delivered', label: 'Delivered' }
+  ];
+  function stepHTML(status) {
+    if (status === 'declined') {
+      return '<div class="ostep ostep--declined">✕ This request was declined — nothing was charged. ' +
+        'Contact us and we’ll suggest alternatives.</div>';
+    }
+    var idx = FLOW.map(function (s) { return s.key; }).indexOf(status);
+    if (idx < 0) idx = 0;
+    var html = '<div class="ostep">';
+    FLOW.forEach(function (s, i) {
+      if (i) html += '<div class="ostep__line' + (i <= idx ? ' is-done' : '') + '"></div>';
+      var cls = i < idx ? 'is-done' : (i === idx ? 'is-current' : '');
+      html += '<div class="ostep__step ' + cls + '">' +
+        '<span class="ostep__dot">' + (i < idx ? '✓' : (i + 1)) + '</span>' +
+        '<span class="ostep__lbl">' + s.label + '</span></div>';
+    });
+    return html + '</div>';
+  }
+
   function getToken() {
     var auth = window.TiaoAuth;
     return auth.token().then(function (t) { return t; });
@@ -56,6 +81,7 @@
           '<span class="acct-order__date">' + date + '</span></div>' +
           '<span class="adm-badge acct-badge acct-badge--' + meta.cls + '">' + esc(meta.label) + '</span>' +
         '</div>' +
+        stepHTML(o.status) +
         '<p class="acct-order__note">' + esc(meta.note) + '</p>' +
         '<div class="acct-order__items">' + items +
           '<div class="checkout__total"><span>Estimated total</span><strong>' + money(o.subtotal) + '</strong></div>' +
@@ -186,6 +212,7 @@
       '<div class="acct-order__top"><div><span class="acct-order__ref">#' + esc(ref) + '</span>' +
         '<span class="acct-order__date">' + date + '</span></div>' +
         '<span class="adm-badge acct-badge acct-badge--' + meta.cls + '">' + esc(meta.label) + '</span></div>' +
+      stepHTML(o.status) +
       '<p class="acct-order__note">' + esc(meta.note) + '</p>' +
       '<div class="acct-order__items">' + items +
         '<div class="checkout__total"><span>Estimated total</span><strong>' + money(o.subtotal) + '</strong></div></div>' +

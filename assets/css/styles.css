@@ -657,6 +657,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .acct-placed { text-align: center; padding: 40px 20px 28px; background: var(--paper); border: 1px solid var(--line); margin-bottom: 26px; }
 .acct-placed h2 { font-size: 26px; font-weight: 900; margin-bottom: 10px; }
 .acct-placed .muted-note { max-width: 440px; margin: 0 auto 18px; }
+/* ---- order progress stepper (customer side) ---- */
+.ostep { display: flex; align-items: flex-start; margin: 18px 0 6px; }
+.ostep__step { display: flex; flex-direction: column; align-items: center; gap: 7px; flex: 0 0 auto; width: 74px; text-align: center; }
+.ostep__dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--paper); border: 2px solid var(--line); color: var(--ink-soft); transition: all .2s var(--ease); }
+.ostep__lbl { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.ostep__line { flex: 1; height: 2px; background: var(--line); margin-top: 14px; }
+.ostep__line.is-done { background: var(--ink); }
+.ostep__step.is-done .ostep__dot { background: var(--ink); border-color: var(--ink); color: #fff; }
+.ostep__step.is-done .ostep__lbl { color: var(--ink); }
+.ostep__step.is-current .ostep__dot { background: var(--ink); border-color: var(--ink); color: #fff; box-shadow: 0 0 0 4px rgba(0,0,0,.08); }
+.ostep__step.is-current .ostep__lbl { color: var(--ink); }
+.ostep--declined { display: block; margin: 16px 0; padding: 12px 14px; background: #fbeaea; color: #9a1f1f; font-size: 13px; font-weight: 600; border-radius: 8px; }
 .acct-signin { margin-bottom: 30px; font-size: 14px; color: var(--ink-soft); }
 .link-inline { background: none; border: none; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; font-weight: 600; cursor: pointer; }
 .acct-track { max-width: 460px; background: var(--paper); border: 1px solid var(--line); padding: 26px; }

@@ -153,7 +153,6 @@ button, input, select { font-family: inherit; }
 .adm-card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
 .adm-head-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .adm-neworder { white-space: nowrap; }
-.adm-mini--del { border-color: var(--line); }
 .adm-mini--del:hover { background: var(--critical); color: #fff; border-color: var(--critical); }
 
 /* manual order form items */
@@ -238,9 +237,13 @@ button, input, select { font-family: inherit; }
 .adm-badge--neutral { background: color-mix(in srgb, var(--neutral) 15%, transparent); color: var(--neutral); }
 
 .adm-actions { display: flex; gap: 6px; margin-top: 8px; }
-.adm-mini { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; }
-.adm-mini--ok:hover { background: var(--good); color: #fff; border-color: var(--good); }
-.adm-mini--no:hover { background: var(--critical); color: #fff; border-color: var(--critical); }
+.adm-mini { font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); cursor: pointer; transition: filter .15s, background .15s, color .15s, border-color .15s; }
+/* Accept = solid green (primary), Decline = red outline, delete = visible ghost */
+.adm-mini--ok { background: var(--good); color: #fff; border-color: var(--good); }
+.adm-mini--ok:hover { filter: brightness(1.1); }
+.adm-mini--no { background: transparent; color: var(--critical); border-color: var(--critical); }
+.adm-mini--no:hover { background: var(--critical); color: #fff; }
+.adm-mini--del { background: transparent; color: var(--ink-2); border-color: var(--muted); }
 
 .adm-select, .adm-track { width: 100%; margin-bottom: 6px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--ink); font-size: 12px; }
 .adm-select:focus, .adm-track:focus { outline: none; border-color: var(--rev); }
