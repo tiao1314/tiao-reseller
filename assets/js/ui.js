@@ -43,7 +43,7 @@
       '</div></div>' +
       '<div class="wrap header__inner">' +
         '<nav class="nav nav--left">' + links + '</nav>' +
-        '<a href="index.html" class="logo drip-logo" aria-label="dripdrip">' + dripLogo() + '</a>' +
+        '<a href="index.html" class="logo">dripdrip</a>' +
         '<div class="header__actions">' +
           '<button class="icon-btn" data-open="search">' + ICONS.search + '<span>SEARCH</span></button>' +
           '<button class="icon-btn" data-open="account">' + ICONS.user + '<span class="js-login-label">LOGIN</span></button>' +
@@ -58,11 +58,11 @@
   function footerHTML() {
     return '' +
       '<div class="wrap footer__grid">' +
-        '<div class="footer__brand"><span class="drip-logo drip-logo--footer">' + dripLogo() + '</span>' +
+        '<div class="footer__brand"><span class="logo logo--footer">dripdrip</span>' +
           '<p>Authenticated luxury resale. Bags and shoes — verified, on-hand, ready to ship.</p></div>' +
         '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="account.html">Track Order</a><a href="request.html">Request</a></div>' +
-        '<div class="footer__col"><h4>HELP</h4><a href="#">Authentication</a><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Contact</a></div>' +
-        '<div class="footer__col"><h4>COMPANY</h4><a href="#">About</a><a href="#">Sell With Us</a><a href="#">Careers</a><a href="#">Terms & Privacy</a></div>' +
+        '<div class="footer__col"><h4>HELP</h4><a href="delivery.html">Delivery</a><a href="returns.html">Returns &amp; Refunds</a><a href="account.html">Track Order</a><a href="#">Contact</a></div>' +
+        '<div class="footer__col"><h4>COMPANY</h4><a href="about.html">About Us</a><a href="#">Sell With Us</a></div>' +
       '</div>' +
       '<div class="wrap footer__bottom"><span>© 2026 dripdrip. All rights reserved.</span><span>Every piece independently authenticated.</span></div>';
   }
@@ -103,9 +103,7 @@
           '<a href="account.html">MY ORDERS</a>' +
         '</nav></div>' +
       // Toast
-      '<div class="toast js-toast" aria-live="polite"></div>' +
-      // SVG goo filter for the dripping logo
-      GOO_SVG;
+      '<div class="toast js-toast" aria-live="polite"></div>';
   }
 
   /* =================== PRODUCT CARD (shared) =================== */

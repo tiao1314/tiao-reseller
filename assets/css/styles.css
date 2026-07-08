@@ -450,6 +450,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .login__toggle { font-size: 13px; color: var(--ink-soft); margin-top: 16px; }
 .login__toggle a { font-weight: 600; text-decoration: underline; color: var(--ink); }
 
+/* ===== policy / content pages (delivery, returns, about) ===== */
+.policy { padding: 40px 0 90px; }
+.policy__title { font-size: clamp(34px, 6vw, 60px); font-weight: 900; letter-spacing: -.02em; margin: 8px 0 30px; }
+.prose { max-width: 680px; }
+.prose p { font-size: 15px; color: var(--ink-soft); line-height: 1.75; margin-bottom: 18px; }
+.prose h3 { font-size: 15px; font-weight: 800; letter-spacing: .02em; margin: 30px 0 8px; color: var(--ink); text-transform: uppercase; }
+.prose strong { color: var(--ink); font-weight: 600; }
+.prose__lead { font-size: 21px !important; color: var(--ink) !important; font-weight: 700; }
+.prose__list { max-width: 680px; margin: 0 0 18px; padding-left: 20px; display: flex; flex-direction: column; gap: 12px; }
+.prose__list li { font-size: 15px; color: var(--ink-soft); line-height: 1.7; }
+.prose__list li strong { color: var(--ink); }
+.prose__note { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 28px; font-size: 14px; }
+.prose__note a { text-decoration: underline; font-weight: 600; color: var(--ink); }
+
 /* ===== My Orders (account) page ===== */
 .account-page { padding: 40px 0 80px; }
 .account-page > .wrap { max-width: 780px; }
