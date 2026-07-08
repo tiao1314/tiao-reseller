@@ -363,7 +363,7 @@
     el('ordersEmpty').hidden = rows.length > 0;
     body.innerHTML = rows.map(function (o) {
       var items = Array.isArray(o.items) ? o.items : [];
-      var itemHtml = items.map(function (it) { return '<div class="adm-item"><b>' + esc(it.brand) + '</b> ' + esc(it.name) + '</div>'; }).join('');
+      var itemHtml = items.map(function (it) { return '<div class="adm-item"><b>' + esc(it.brand) + '</b> ' + esc(it.name) + (it.size ? ' <span class="adm-muted">· ' + esc(it.size) + '</span>' : '') + '</div>'; }).join('');
       var meta = STATUS_META[o.status] || STATUS_META.pending;
       var ref = '#' + String(o.id).slice(0, 8).toUpperCase();
       var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });

@@ -7,6 +7,7 @@
 
   function money(n) { return '£' + n.toLocaleString('en-GB'); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  function findProduct(id) { return (window.TIAO_PRODUCTS || []).find(function (p) { return String(p.id) === String(id); }); }
 
   var ICONS = {
     search: '<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -95,6 +96,9 @@
       // Login / account modal
       '<div class="modal" data-drawer="account"><div class="modal__backdrop" data-close></div>' +
         '<div class="modal__panel js-account-panel" role="dialog" aria-label="Account"></div></div>' +
+      // Size picker modal (shown before adding a sized item to the cart)
+      '<div class="modal" data-drawer="size"><div class="modal__backdrop" data-close></div>' +
+        '<div class="modal__panel js-size-panel" role="dialog" aria-label="Choose a size"></div></div>' +
       // Mobile menu
       '<div class="mobile-nav" data-drawer="menu"><div class="mobile-nav__backdrop" data-close></div>' +
         '<nav class="mobile-nav__panel">' +
@@ -145,7 +149,9 @@
     box.innerHTML = items.length ? items.map(function (p, i) {
       return '<div class="d-item"><img src="' + p.img + '" alt="' + esc(p.name) + '" />' +
         '<div class="d-item__info"><div class="d-item__brand">' + esc(p.brand) + '</div>' +
-        '<div class="d-item__name">' + esc(p.name) + '</div><div class="d-item__price">' + money(p.price) + '</div></div>' +
+        '<div class="d-item__name">' + esc(p.name) + '</div>' +
+        (p.chosenSize ? '<div class="d-item__size">Size: ' + esc(p.chosenSize) + '</div>' : '') +
+        '<div class="d-item__price">' + money(p.price) + '</div></div>' +
         '<button class="d-item__remove" data-remove-cart="' + i + '">Remove</button></div>';
     }).join('') : '<p class="drawer__empty">Your cart is empty.</p>';
     document.querySelectorAll('.js-cart-total').forEach(function (el) { el.textContent = money(Store.cartTotal()); });
@@ -250,6 +256,28 @@
     }
   }
 
+  /* =================== SIZE PICKER =================== */
+  // Add-to-cart for a sized item: show its sizes, and add once one is chosen.
+  function openSize(p) {
+    var panel = document.querySelector('.js-size-panel');
+    if (!panel) { Store.addToCart(p.id, ''); toast('Added to cart'); open('cart'); return; }
+    var pills = p.sizes.map(function (s) {
+      return '<button type="button" class="sizepick__opt" data-size="' + esc(s) + '" data-id="' + esc(p.id) + '">' + esc(s) + '</button>';
+    }).join('');
+    panel.innerHTML =
+      '<button class="modal__close" data-close aria-label="Close">✕</button>' +
+      '<div class="sizepick">' +
+        '<div class="sizepick__brand">' + esc(p.brand) + '</div>' +
+        '<div class="sizepick__name">' + esc(p.name) + '</div>' +
+        '<div class="sizepick__label">Select a size</div>' +
+        '<div class="sizepick__opts">' + pills + '</div>' +
+        '<p class="sizepick__hint">Tap a size to add it to your cart.</p>' +
+      '</div>';
+    var el = document.querySelector('[data-drawer="size"]');
+    el.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
   /* =================== SEARCH =================== */
   function runSearch(q) {
     var box = document.querySelector('.js-search-results');
@@ -306,8 +334,17 @@
       if (opener) { e.preventDefault(); open(opener.getAttribute('data-open')); return; }
       if (e.target.closest('[data-close]')) { closeAll(); return; }
 
+      var sizeOpt = e.target.closest('[data-size]');
+      if (sizeOpt) { closeAll(); Store.addToCart(sizeOpt.dataset.id, sizeOpt.dataset.size); toast('Added to cart · ' + sizeOpt.dataset.size); open('cart'); return; }
+
       var add = e.target.closest('[data-add]');
-      if (add) { var id = add.closest('.card').dataset.id; Store.addToCart(id); toast('Added to cart'); open('cart'); return; }
+      if (add) {
+        var id = add.closest('.card').dataset.id;
+        var p = findProduct(id);
+        if (p && p.sizes && p.sizes.length) { openSize(p); }
+        else { Store.addToCart(id, ''); toast('Added to cart'); open('cart'); }
+        return;
+      }
 
       var wishBtn = e.target.closest('[data-wish]');
       if (wishBtn) { var wid = wishBtn.closest('.card').dataset.id; var on = Store.toggleWishlist(wid); toast(on ? 'Added to wishlist' : 'Removed from wishlist'); return; }

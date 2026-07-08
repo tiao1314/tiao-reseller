@@ -11,7 +11,11 @@ window.Store = (function () {
   }
   function write(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
-  var cart = read(KEYS.cart, []);      // array of product ids
+  // cart entries are { id, size }. Older saved carts stored bare id strings —
+  // normalise those so nothing breaks on upgrade.
+  var cart = read(KEYS.cart, []).map(function (e) {
+    return typeof e === 'string' ? { id: e, size: '' } : { id: String(e.id), size: e.size || '' };
+  });
   var wish = read(KEYS.wish, []);      // array of product ids
   var user = read(KEYS.user, null);    // { name, email, picture }
 
@@ -28,10 +32,13 @@ window.Store = (function () {
     onChange: function (fn) { listeners.push(fn); },
 
     /* ---- cart ---- */
-    getCart: function () { return cart.map(product).filter(Boolean); },
+    // Each returned item is a copy of the product with the chosen size attached.
+    getCart: function () {
+      return cart.map(function (e) { var p = product(e.id); return p ? Object.assign({}, p, { chosenSize: e.size }) : null; }).filter(Boolean);
+    },
     cartCount: function () { return cart.length; },
-    cartTotal: function () { return cart.reduce(function (s, id) { var p = product(id); return s + (p ? p.price : 0); }, 0); },
-    addToCart: function (id) { cart.push(String(id)); write(KEYS.cart, cart); emit(); },
+    cartTotal: function () { return cart.reduce(function (s, e) { var p = product(e.id); return s + (p ? p.price : 0); }, 0); },
+    addToCart: function (id, size) { cart.push({ id: String(id), size: size || '' }); write(KEYS.cart, cart); emit(); },
     removeFromCart: function (index) { cart.splice(index, 1); write(KEYS.cart, cart); emit(); },
     clearCart: function () { cart = []; write(KEYS.cart, cart); emit(); },
 

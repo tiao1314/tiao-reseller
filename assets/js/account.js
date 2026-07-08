@@ -45,7 +45,8 @@
       var items = (Array.isArray(o.items) ? o.items : []).map(function (it) {
         return '<div class="co-line"><img src="' + esc(it.img || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
           '<div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
-          '<span class="co-line__name">' + esc(it.name) + '</span></div>' +
+          '<span class="co-line__name">' + esc(it.name) + '</span>' +
+          (it.size ? '<span class="co-line__size">Size: ' + esc(it.size) + '</span>' : '') + '</div>' +
           '<span class="co-line__price">' + money(it.price) + '</span></div>';
       }).join('');
       var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -176,7 +177,9 @@
     var meta = STATUS[o.status] || STATUS.pending;
     var items = (Array.isArray(o.items) ? o.items : []).map(function (it) {
       return '<div class="co-line"><div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
-        '<span class="co-line__name">' + esc(it.name) + '</span></div><span class="co-line__price">' + money(it.price) + '</span></div>';
+        '<span class="co-line__name">' + esc(it.name) + '</span>' +
+        (it.size ? '<span class="co-line__size">Size: ' + esc(it.size) + '</span>' : '') + '</div>' +
+        '<span class="co-line__price">' + money(it.price) + '</span></div>';
     }).join('');
     var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     return '<article class="acct-order" style="margin-top:20px">' +

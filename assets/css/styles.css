@@ -378,6 +378,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .d-item__info { flex: 1; }
 .d-item__brand { font-size: 11px; font-weight: 700; letter-spacing: .1em; }
 .d-item__name { font-size: 12px; color: var(--ink-soft); margin: 2px 0 6px; }
+.d-item__size { font-size: 11px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.co-line__size { font-size: 11px; font-weight: 600; color: var(--ink); display: block; margin-top: 2px; }
+/* ---- size picker ---- */
+.sizepick { text-align: center; }
+.sizepick__brand { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.sizepick__name { font-size: 15px; color: var(--ink-soft); margin: 4px 0 20px; }
+.sizepick__label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px; }
+.sizepick__opts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.sizepick__opt {
+  min-width: 58px; padding: 12px 14px; border: 1px solid var(--ink);
+  background: var(--paper); color: var(--ink); font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.sizepick__opt:hover { background: var(--ink); color: #fff; }
+.sizepick__hint { font-size: 12px; color: var(--ink-soft); margin-top: 16px; }
 .d-item__price { font-size: 13px; font-weight: 700; }
 .d-item__remove { font-size: 11px; color: var(--ink-soft); text-decoration: underline; align-self: flex-start; }
 .drawer__foot { padding: 22px 24px; border-top: 1px solid var(--line); }
