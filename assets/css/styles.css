@@ -291,13 +291,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* only fade to the 2nd photo when there is one */
 .card__media:has(.card__img--alt):hover .card__img--main { opacity: 0; }
 .card__badge {
-  position: absolute; top: 12px; left: 12px;
+  position: absolute; top: 12px; left: 12px; z-index: 3;
   font-size: 10px; font-weight: 700; letter-spacing: .1em;
   background: rgba(255,255,255,.92); padding: 5px 10px;
 }
 .card__badge--new { background: var(--ink); color: #fff; }
 .card__wish {
-  position: absolute; top: 10px; right: 10px;
+  position: absolute; top: 10px; right: 10px; z-index: 3;
   width: 34px; height: 34px; border-radius: 50%;
   background: rgba(255,255,255,.92);
   display: grid; place-items: center;
@@ -306,7 +306,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .card__wish:hover { transform: scale(1.08); }
 .card__wish.is-active { background: var(--ink); color: #fff; }
 .card__add {
-  position: absolute; left: 12px; right: 12px; bottom: 12px;
+  /* z-index MUST sit above the images (main img is z-index:1) or the image
+     swallows the click and nothing gets added. */
+  position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 3;
   background: var(--ink); color: #fff;
   font-size: 11px; font-weight: 700; letter-spacing: .12em;
   padding: 12px; text-align: center; cursor: pointer;
