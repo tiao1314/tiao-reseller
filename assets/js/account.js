@@ -58,37 +58,96 @@
     });
   }
 
-  function render(orders) {
-    var body = el('acctBody');
-    if (!orders.length) {
-      body.innerHTML = '<div class="acct-empty"><p>You haven’t placed any requests yet.</p>' +
-        '<a href="bags.html" class="btn btn--solid">START SHOPPING</a></div>';
-      return;
+  // ---- logged-in list: searchable + collapsible so many orders stay tidy ----
+  var allOrders = [];
+  var flt = { q: '', status: 'all' };
+  var FILTER_ORDER = ['all', 'pending', 'accepted', 'shipped', 'delivered', 'declined'];
+
+  function orderRef(o) {
+    return o.ref_code ? esc(o.ref_code) : ('#' + esc(String(o.id).slice(0, 8).toUpperCase()));
+  }
+  function orderMatches(o) {
+    if (flt.status !== 'all' && o.status !== flt.status) return false;
+    if (flt.q) {
+      var names = (Array.isArray(o.items) ? o.items : []).map(function (it) { return it.brand + ' ' + it.name; }).join(' ');
+      var hay = ((o.ref_code || '') + ' ' + String(o.id) + ' ' + names).toLowerCase();
+      if (hay.indexOf(flt.q) === -1) return false;
     }
-    body.innerHTML = orders.map(function (o) {
-      var meta = STATUS[o.status] || STATUS.pending;
-      var items = (Array.isArray(o.items) ? o.items : []).map(function (it) {
-        return '<div class="co-line"><img src="' + esc(it.img || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
-          '<div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
-          '<span class="co-line__name">' + esc(it.name) + ((it.qty || 1) > 1 ? ' ×' + it.qty : '') + '</span>' +
-          (it.size ? '<span class="co-line__size">Size: ' + esc(it.size) + '</span>' : '') + '</div>' +
-          '<span class="co-line__price">' + money(it.price * (it.qty || 1)) + '</span></div>';
-      }).join('');
-      var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      return '<article class="acct-order">' +
-        '<div class="acct-order__top">' +
-          '<div><span class="acct-order__ref">#' + esc(String(o.id).slice(0, 8).toUpperCase()) + '</span>' +
-          '<span class="acct-order__date">' + date + '</span></div>' +
-          '<span class="adm-badge acct-badge acct-badge--' + meta.cls + '">' + esc(meta.label) + '</span>' +
-        '</div>' +
+    return true;
+  }
+
+  function orderCardHTML(o, open) {
+    var meta = STATUS[o.status] || STATUS.pending;
+    var items = (Array.isArray(o.items) ? o.items : []).map(function (it) {
+      return '<div class="co-line"><img src="' + esc(it.img || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+        '<div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
+        '<span class="co-line__name">' + esc(it.name) + ((it.qty || 1) > 1 ? ' ×' + it.qty : '') + '</span>' +
+        (it.size ? '<span class="co-line__size">Size: ' + esc(it.size) + '</span>' : '') + '</div>' +
+        '<span class="co-line__price">' + money(it.price * (it.qty || 1)) + '</span></div>';
+    }).join('');
+    var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return '<details class="ord"' + (open ? ' open' : '') + '>' +
+      '<summary class="ord__sum">' +
+        '<span class="ord__ref">' + orderRef(o) + '</span>' +
+        '<span class="ord__date">' + date + '</span>' +
+        '<span class="adm-badge acct-badge acct-badge--' + meta.cls + '">' + esc(meta.label) + '</span>' +
+        '<span class="ord__chev" aria-hidden="true">⌄</span>' +
+      '</summary>' +
+      '<div class="ord__body">' +
         stepHTML(o.status) +
         '<p class="acct-order__note">' + esc(meta.note) + '</p>' +
         '<div class="acct-order__items">' + items +
           '<div class="checkout__total"><span>Estimated total</span><strong>' + money(o.subtotal) + '</strong></div>' +
         '</div>' +
         (o.tracking_url ? '<a class="btn btn--outline acct-track-btn" href="' + esc(o.tracking_url) + '" target="_blank" rel="noopener">TRACK PARCEL →</a>' : '') +
-      '</article>';
+      '</div>' +
+    '</details>';
+  }
+
+  function paint() {
+    var box = el('acctList'); if (!box) return;
+    var list = allOrders.filter(orderMatches);
+    if (!list.length) {
+      box.innerHTML = '<p class="muted-note acct-none">No orders match. <button class="link-inline" id="acctClear">Clear</button></p>';
+      var c = el('acctClear'); if (c) c.addEventListener('click', function () { flt = { q: '', status: 'all' }; render(allOrders); });
+      return;
+    }
+    // expand the first result by default (or the only one); rest stay folded
+    box.innerHTML = list.map(function (o, i) { return orderCardHTML(o, list.length === 1 || i === 0); }).join('');
+  }
+
+  function render(orders) {
+    allOrders = orders || [];
+    var body = el('acctBody');
+    if (!allOrders.length) {
+      body.innerHTML = '<div class="acct-empty"><p>You haven’t placed any requests yet.</p>' +
+        '<a href="bags.html" class="btn btn--solid">START SHOPPING</a></div>';
+      return;
+    }
+    var counts = { all: allOrders.length };
+    FILTER_ORDER.slice(1).forEach(function (s) { counts[s] = allOrders.filter(function (o) { return o.status === s; }).length; });
+    var SHORT = { all: 'All', pending: 'Pending', accepted: 'Accepted', shipped: 'Shipped', delivered: 'Delivered', declined: 'Declined' };
+    var pills = FILTER_ORDER.filter(function (s) { return s === 'all' || counts[s]; }).map(function (s) {
+      return '<button class="acct-fpill' + (flt.status === s ? ' is-active' : '') + '" data-status="' + s + '">' +
+        (SHORT[s] || s) + ' <em>' + counts[s] + '</em></button>';
     }).join('');
+
+    body.innerHTML =
+      '<div class="acct-controls">' +
+        '<input type="search" class="acct-search" id="acctSearch" placeholder="Search reference or item…" autocomplete="off" value="' + esc(flt.q) + '">' +
+        '<div class="acct-fpills" id="acctFilters">' + pills + '</div>' +
+      '</div>' +
+      '<div id="acctList"></div>';
+
+    el('acctSearch').addEventListener('input', function () { flt.q = this.value.trim().toLowerCase(); paint(); });
+    el('acctFilters').querySelectorAll('[data-status]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        flt.status = b.dataset.status;
+        el('acctFilters').querySelectorAll('[data-status]').forEach(function (x) { x.classList.toggle('is-active', x === b); });
+        paint();
+      });
+    });
+    paint();
   }
 
   // Read ?ref=&email=&placed=1 (set right after placing an order).
