@@ -151,7 +151,13 @@
         '<div class="d-item__info"><div class="d-item__brand">' + esc(p.brand) + '</div>' +
         '<div class="d-item__name">' + esc(p.name) + '</div>' +
         (p.chosenSize ? '<div class="d-item__size">Size: ' + esc(p.chosenSize) + '</div>' : '') +
-        '<div class="d-item__price">' + money(p.price) + '</div></div>' +
+        '<div class="d-item__qty">' +
+          '<button class="d-item__qbtn" data-qty-dec="' + i + '" aria-label="Decrease quantity">−</button>' +
+          '<span class="d-item__qn">' + p.qty + '</span>' +
+          '<button class="d-item__qbtn" data-qty-inc="' + i + '" aria-label="Increase quantity">+</button>' +
+        '</div>' +
+        '<div class="d-item__price">' + money(p.price * p.qty) +
+          (p.qty > 1 ? ' <span class="d-item__each">(' + money(p.price) + ' each)</span>' : '') + '</div></div>' +
         '<button class="d-item__remove" data-remove-cart="' + i + '">Remove</button></div>';
     }).join('') : '<p class="drawer__empty">Your cart is empty.</p>';
     document.querySelectorAll('.js-cart-total').forEach(function (el) { el.textContent = money(Store.cartTotal()); });
@@ -349,6 +355,8 @@
       var wishBtn = e.target.closest('[data-wish]');
       if (wishBtn) { var wid = wishBtn.closest('.card').dataset.id; var on = Store.toggleWishlist(wid); toast(on ? 'Added to wishlist' : 'Removed from wishlist'); return; }
 
+      var qi = e.target.closest('[data-qty-inc]'); if (qi) { Store.changeQty(+qi.dataset.qtyInc, 1); return; }
+      var qd = e.target.closest('[data-qty-dec]'); if (qd) { Store.changeQty(+qd.dataset.qtyDec, -1); return; }
       var rc = e.target.closest('[data-remove-cart]'); if (rc) { Store.removeFromCart(+rc.dataset.removeCart); return; }
       var rw = e.target.closest('[data-remove-wish]'); if (rw) { Store.removeFromWishlist(rw.dataset.removeWish); return; }
       var mc = e.target.closest('[data-move-cart]'); if (mc) { Store.addToCart(mc.dataset.moveCart); Store.removeFromWishlist(mc.dataset.moveCart); toast('Moved to cart'); return; }

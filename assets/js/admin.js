@@ -186,7 +186,7 @@
     var items = Array.isArray(o.items) ? o.items : [];
     return items.reduce(function (s, it) {
       var cost = state.costs[it.id] != null ? state.costs[it.id] : 0;
-      return s + (Number(it.price) - cost);
+      return s + (Number(it.price) - cost) * (it.qty || 1);
     }, 0);
   }
 
@@ -372,7 +372,7 @@
     el('ordersEmpty').hidden = rows.length > 0;
     body.innerHTML = rows.map(function (o) {
       var items = Array.isArray(o.items) ? o.items : [];
-      var itemHtml = items.map(function (it) { return '<div class="adm-item"><b>' + esc(it.brand) + '</b> ' + esc(it.name) + (it.size ? ' <span class="adm-muted">· ' + esc(it.size) + '</span>' : '') + '</div>'; }).join('');
+      var itemHtml = items.map(function (it) { return '<div class="adm-item"><b>' + esc(it.brand) + '</b> ' + esc(it.name) + ((it.qty || 1) > 1 ? ' <b>×' + it.qty + '</b>' : '') + (it.size ? ' <span class="adm-muted">· ' + esc(it.size) + '</span>' : '') + '</div>'; }).join('');
       var meta = STATUS_META[o.status] || STATUS_META.pending;
       var ref = '#' + String(o.id).slice(0, 8).toUpperCase();
       var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });

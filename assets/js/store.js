@@ -11,10 +11,11 @@ window.Store = (function () {
   }
   function write(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
-  // cart entries are { id, size }. Older saved carts stored bare id strings —
-  // normalise those so nothing breaks on upgrade.
+  // cart entries are { id, size, qty }. Older saved carts stored bare id strings
+  // or {id,size} — normalise those so nothing breaks on upgrade.
   var cart = read(KEYS.cart, []).map(function (e) {
-    return typeof e === 'string' ? { id: e, size: '' } : { id: String(e.id), size: e.size || '' };
+    if (typeof e === 'string') return { id: e, size: '', qty: 1 };
+    return { id: String(e.id), size: e.size || '', qty: e.qty || 1 };
   });
   var wish = read(KEYS.wish, []);      // array of product ids
   var user = read(KEYS.user, null);    // { name, email, picture }
@@ -32,13 +33,29 @@ window.Store = (function () {
     onChange: function (fn) { listeners.push(fn); },
 
     /* ---- cart ---- */
-    // Each returned item is a copy of the product with the chosen size attached.
+    // Each returned item is a copy of the product with the chosen size + qty.
     getCart: function () {
-      return cart.map(function (e) { var p = product(e.id); return p ? Object.assign({}, p, { chosenSize: e.size }) : null; }).filter(Boolean);
+      return cart.map(function (e) { var p = product(e.id); return p ? Object.assign({}, p, { chosenSize: e.size, qty: e.qty || 1 }) : null; }).filter(Boolean);
     },
-    cartCount: function () { return cart.length; },
-    cartTotal: function () { return cart.reduce(function (s, e) { var p = product(e.id); return s + (p ? p.price : 0); }, 0); },
-    addToCart: function (id, size) { cart.push({ id: String(id), size: size || '' }); write(KEYS.cart, cart); emit(); },
+    // Badge shows total units (so ×2 counts as 2).
+    cartCount: function () { return cart.reduce(function (s, e) { return s + (e.qty || 1); }, 0); },
+    cartTotal: function () { return cart.reduce(function (s, e) { var p = product(e.id); return s + (p ? p.price * (e.qty || 1) : 0); }, 0); },
+    // Same item + same size stacks into one line (qty++); a different size is a
+    // separate line.
+    addToCart: function (id, size) {
+      id = String(id); size = size || '';
+      var e = cart.find(function (x) { return sameId(x.id, id) && x.size === size; });
+      if (e) e.qty = (e.qty || 1) + 1;
+      else cart.push({ id: id, size: size, qty: 1 });
+      write(KEYS.cart, cart); emit();
+    },
+    // delta +1 / -1; removing the last one drops the line.
+    changeQty: function (index, delta) {
+      var e = cart[index]; if (!e) return;
+      e.qty = (e.qty || 1) + delta;
+      if (e.qty < 1) cart.splice(index, 1);
+      write(KEYS.cart, cart); emit();
+    },
     removeFromCart: function (index) { cart.splice(index, 1); write(KEYS.cart, cart); emit(); },
     clearCart: function () { cart = []; write(KEYS.cart, cart); emit(); },
     // Drop cart entries whose product no longer exists (e.g. items saved before

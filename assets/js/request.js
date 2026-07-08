@@ -20,9 +20,10 @@
     }
     box.innerHTML = items.map(function (p) {
       return '<div class="co-line"><img src="' + p.img + '" alt="' + esc(p.name) + '"><div class="co-line__info">' +
-        '<span class="co-line__brand">' + esc(p.brand) + '</span><span class="co-line__name">' + esc(p.name) + '</span>' +
+        '<span class="co-line__brand">' + esc(p.brand) + '</span><span class="co-line__name">' + esc(p.name) +
+          (p.qty > 1 ? ' ×' + p.qty : '') + '</span>' +
         (p.chosenSize ? '<span class="co-line__size">Size: ' + esc(p.chosenSize) + '</span>' : '') + '</div>' +
-        '<span class="co-line__price">' + money(p.price) + '</span></div>';
+        '<span class="co-line__price">' + money(p.price * p.qty) + '</span></div>';
     }).join('');
     document.getElementById('summaryTotal').textContent = money(total);
 
@@ -47,7 +48,7 @@
         customer_email: fval('email'),
         customer_phone: fval('phone'),
         note: fval('note'),
-        items: items.map(function (p) { return { id: p.id, brand: p.brand, name: p.name, price: p.price, img: p.img, size: p.chosenSize || '' }; }),
+        items: items.map(function (p) { return { id: p.id, brand: p.brand, name: p.name, price: p.price, img: p.img, size: p.chosenSize || '', qty: p.qty || 1 }; }),
         subtotal: total,
         status: 'pending',
         ref_code: refCode
@@ -113,9 +114,9 @@
     function finish(order) {
       var recap = order.items.map(function (it) {
         return '<div class="co-line"><div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
-          '<span class="co-line__name">' + esc(it.name) + '</span>' +
+          '<span class="co-line__name">' + esc(it.name) + ((it.qty || 1) > 1 ? ' ×' + it.qty : '') + '</span>' +
           (it.size ? '<span class="co-line__size">Size: ' + esc(it.size) + '</span>' : '') + '</div>' +
-          '<span class="co-line__price">' + money(it.price) + '</span></div>';
+          '<span class="co-line__price">' + money(it.price * (it.qty || 1)) + '</span></div>';
       }).join('');
       var contact = order.customer_phone || order.customer_email;
       document.querySelector('.checkout__grid').innerHTML =

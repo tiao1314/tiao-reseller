@@ -24,10 +24,11 @@ Deno.serve(async (req) => {
     if (!KEY) return new Response("RESEND_API_KEY not set", { status: 200 });
 
     const items = Array.isArray(o.items) ? o.items : [];
-    const rows = items.map((it: { brand?: string; name?: string; price?: number; size?: string }) =>
+    const rows = items.map((it: { brand?: string; name?: string; price?: number; size?: string; qty?: number }) =>
       `<tr><td style="padding:8px 0;color:#111"><b>${esc(it.brand || "")}</b> ${esc(it.name || "")}` +
+      `${(it.qty || 1) > 1 ? ` ×${it.qty}` : ""}` +
       `${it.size ? ` <span style="color:#888">· ${esc(it.size)}</span>` : ""}</td>` +
-      `<td style="padding:8px 0;text-align:right;color:#111;white-space:nowrap">${money(it.price || 0)}</td></tr>`
+      `<td style="padding:8px 0;text-align:right;color:#111;white-space:nowrap">${money((it.price || 0) * (it.qty || 1))}</td></tr>`
     ).join("");
     const first = (o.customer_name || "").split(" ")[0];
 

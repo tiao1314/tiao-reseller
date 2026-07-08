@@ -70,9 +70,9 @@
       var items = (Array.isArray(o.items) ? o.items : []).map(function (it) {
         return '<div class="co-line"><img src="' + esc(it.img || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
           '<div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
-          '<span class="co-line__name">' + esc(it.name) + '</span>' +
+          '<span class="co-line__name">' + esc(it.name) + ((it.qty || 1) > 1 ? ' ×' + it.qty : '') + '</span>' +
           (it.size ? '<span class="co-line__size">Size: ' + esc(it.size) + '</span>' : '') + '</div>' +
-          '<span class="co-line__price">' + money(it.price) + '</span></div>';
+          '<span class="co-line__price">' + money(it.price * (it.qty || 1)) + '</span></div>';
       }).join('');
       var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
       return '<article class="acct-order">' +
@@ -203,9 +203,9 @@
     var meta = STATUS[o.status] || STATUS.pending;
     var items = (Array.isArray(o.items) ? o.items : []).map(function (it) {
       return '<div class="co-line"><div class="co-line__info"><span class="co-line__brand">' + esc(it.brand) + '</span>' +
-        '<span class="co-line__name">' + esc(it.name) + '</span>' +
+        '<span class="co-line__name">' + esc(it.name) + ((it.qty || 1) > 1 ? ' ×' + it.qty : '') + '</span>' +
         (it.size ? '<span class="co-line__size">Size: ' + esc(it.size) + '</span>' : '') + '</div>' +
-        '<span class="co-line__price">' + money(it.price) + '</span></div>';
+        '<span class="co-line__price">' + money(it.price * (it.qty || 1)) + '</span></div>';
     }).join('');
     var date = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     return '<article class="acct-order" style="margin-top:20px">' +
