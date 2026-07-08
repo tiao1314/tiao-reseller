@@ -309,11 +309,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   position: absolute; left: 12px; right: 12px; bottom: 12px;
   background: var(--ink); color: #fff;
   font-size: 11px; font-weight: 700; letter-spacing: .12em;
-  padding: 12px; text-align: center;
-  opacity: 0; transform: translateY(10px);
-  transition: opacity .3s var(--ease), transform .3s var(--ease);
+  padding: 12px; text-align: center; cursor: pointer;
+  opacity: 1;                         /* always visible so it's obvious */
+  box-shadow: 0 6px 18px rgba(0,0,0,.22);
+  transition: background .2s var(--ease), transform .2s var(--ease);
 }
-.card:hover .card__add { opacity: 1; transform: translateY(0); }
+.card__add:hover { background: #333; }
+.card:hover .card__add { transform: translateY(-2px); }
+.card__add:active { transform: translateY(0); }
 .card__body { padding: 14px 4px 4px; }
 .card__brand { font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--ink); }
 .card__name { font-size: 13px; color: var(--ink-soft); margin: 3px 0 8px; min-height: 34px; }

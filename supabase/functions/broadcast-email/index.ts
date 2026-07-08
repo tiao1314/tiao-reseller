@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     if (!KEY) return json({ error: "RESEND_API_KEY not set" }, 500);
 
     const auth = req.headers.get("Authorization") || "";
-    let emails: string[] = [];
+    let people: { email: string; token: string }[] = [];
 
     if (test) {
       // Test send: resolve the caller's OWN verified email from their token, so
@@ -50,10 +50,10 @@ Deno.serve(async (req) => {
       });
       if (!me.ok) return json({ error: "Sign in again to send a test." }, 401);
       const u = await me.json();
-      if (u?.email) emails = [u.email];
+      if (u?.email) people = [{ email: u.email, token: "" }];
     } else {
       // Pull subscribers with the caller's token — RLS enforces admin-only read.
-      const listRes = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?select=email`, {
+      const listRes = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?select=email,unsub_token`, {
         headers: { apikey: ANON!, Authorization: auth },
       });
       if (!listRes.ok) {
@@ -61,30 +61,37 @@ Deno.serve(async (req) => {
         return json({ error: `Could not read subscribers (${listRes.status}): ${t}` }, 403);
       }
       const rows = await listRes.json();
-      emails = (Array.isArray(rows) ? rows : [])
-        .map((r: { email?: string }) => (r.email || "").trim())
-        .filter(Boolean);
+      people = (Array.isArray(rows) ? rows : [])
+        .map((r: { email?: string; unsub_token?: string }) => ({ email: (r.email || "").trim(), token: r.unsub_token || "" }))
+        .filter((p: { email: string }) => p.email);
     }
 
-    if (!emails.length) return json({ sent: 0, total: 0, note: "No subscribers to email (or you're not an admin)." });
+    if (!people.length) return json({ sent: 0, total: 0, note: "No subscribers to email (or you're not an admin)." });
 
     // Build a branded HTML body from the plain-text message (keep line breaks).
+    // The unsubscribe link is per-recipient (uses their token).
     const htmlMsg = esc(message).replace(/\n/g, "<br>");
-    const html = `
+    const build = (token: string) => {
+      const unsub = token
+        ? `${SUPABASE_URL}/functions/v1/unsubscribe?t=${encodeURIComponent(token)}`
+        : "https://dripdrip.store";
+      return `
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;color:#111;padding:8px">
         <h1 style="font-weight:800;letter-spacing:.04em;margin:0 0 4px">dripdrip</h1>
         <p style="color:#999;font-size:12px;letter-spacing:.12em;margin:0 0 24px">AUTHENTICATED LUXURY · BAGS &amp; SHOES</p>
         <div style="color:#333;line-height:1.7;font-size:15px">${htmlMsg}</div>
         <p style="margin:26px 0 0"><a href="https://dripdrip.store" style="background:#111;color:#fff;text-decoration:none;padding:13px 26px;border-radius:6px;font-weight:700;font-size:14px;display:inline-block">SHOP NOW</a></p>
-        <p style="color:#aaa;font-size:12px;margin-top:32px">You received this because you subscribed at dripdrip.store.</p>
+        <p style="color:#aaa;font-size:12px;margin-top:32px">You received this because you subscribed at dripdrip.store.<br>
+          <a href="${unsub}" style="color:#aaa">Unsubscribe</a></p>
       </div>`;
+    };
 
     // Resend's batch endpoint accepts up to 100 messages per call.
     let sent = 0;
     const errors: string[] = [];
-    for (let i = 0; i < emails.length; i += 100) {
-      const chunk = emails.slice(i, i + 100);
-      const payload = chunk.map((to) => ({ from: FROM, to, subject, html }));
+    for (let i = 0; i < people.length; i += 100) {
+      const chunk = people.slice(i, i + 100);
+      const payload = chunk.map((p) => ({ from: FROM, to: p.email, subject, html: build(p.token) }));
       const r = await fetch("https://api.resend.com/emails/batch", {
         method: "POST",
         headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
@@ -94,7 +101,7 @@ Deno.serve(async (req) => {
       else errors.push(`batch ${i / 100}: ${r.status} ${await r.text()}`);
     }
 
-    return json({ sent, total: emails.length, errors: errors.length ? errors : undefined });
+    return json({ sent, total: people.length, errors: errors.length ? errors : undefined });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
