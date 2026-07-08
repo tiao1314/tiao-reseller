@@ -150,7 +150,16 @@
       });
     });
     el('signoutBtn').addEventListener('click', signedOut);
-    el('refreshBtn').addEventListener('click', loadData);
+    el('refreshBtn').addEventListener('click', refreshCurrentView);
+  }
+
+  // Refresh reloads the data for whichever tab is showing.
+  function refreshCurrentView() {
+    loadData();  // dashboard tiles/chart/orders
+    if (!el('viewListings').hidden) { listingsLoaded = false; loadListings(); }
+    if (!el('viewActivity').hidden) loadActivity();
+    if (!el('viewBroadcast').hidden) loadBroadcast();
+    toast('Refreshed');
   }
 
   /* ---------------- data ---------------- */

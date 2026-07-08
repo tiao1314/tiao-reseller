@@ -195,7 +195,8 @@ button, input, select { font-family: inherit; }
 .adm-key--btn { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--ink); cursor: pointer; user-select: none; transition: border-color .15s, color .15s; }
 .adm-key--btn:hover { border-color: var(--muted); }
 .adm-key--btn.is-off { color: var(--muted); }
-.adm-tick { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid var(--axis); display: inline-grid; place-items: center; }
+/* legend tick — scoped to .adm-key so it doesn't override the form pills (.adm-tick) */
+.adm-key .adm-tick { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid var(--axis); display: inline-grid; place-items: center; padding: 0; }
 .adm-key--btn.is-on .adm-tick { border-color: transparent; }
 .adm-key--btn.is-on .adm-tick .adm-swatch { width: 16px; height: 16px; border-radius: 5px; }
 .adm-key--btn.is-off .adm-swatch { display: none; }
