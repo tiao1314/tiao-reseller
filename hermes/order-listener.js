@@ -27,7 +27,28 @@ const {
   NTFY_URL,
   ALERT_WEBHOOK_URL,
   ALERT_COMMAND,
+  RESEND_API_KEY, WELCOME_FROM,   // e.g. WELCOME_FROM="dripdrip <hello@dripdrip.store>"
 } = process.env;
+
+// Send a subscriber welcome email via Resend (https://resend.com). Free tier is
+// plenty. Needs RESEND_API_KEY + WELCOME_FROM (a verified sender) in .env.
+function sendWelcomeEmail(email) {
+  if (!RESEND_API_KEY || !WELCOME_FROM) { console.log('[email] Resend not configured — skipping welcome to', email); return; }
+  const html =
+    '<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;color:#111">' +
+      '<h1 style="font-weight:800;letter-spacing:.02em">dripdrip</h1>' +
+      '<h2 style="font-weight:800">Thanks for subscribing 🖤</h2>' +
+      '<p style="color:#555;line-height:1.6">You’re on the list. You’ll be first to hear about new drops, restocks and private sales — verified luxury bags &amp; shoes, priced to move.</p>' +
+      '<p style="color:#555;line-height:1.6">Built same. Made to blend in.</p>' +
+      '<p style="margin-top:24px"><a href="https://dripdrip.store" style="background:#111;color:#fff;text-decoration:none;padding:12px 22px;border-radius:6px;font-weight:700">SHOP NOW</a></p>' +
+    '</div>';
+  fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + RESEND_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: WELCOME_FROM, to: email, subject: 'Welcome to dripdrip', html: html }),
+  }).then((r) => console.log('[email] welcome ->', email, r.status))
+    .catch((e) => console.log('[email] error:', e.message));
+}
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. Copy .env.example → .env and fill it in.');
@@ -132,6 +153,10 @@ function subscribe() {
       const order = payload.new;
       sendAlert(formatOrder(order), order).catch((e) => console.error('alert error:', e.message));
     })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'subscribers' }, (payload) => {
+      const email = payload.new && payload.new.email;
+      if (email) sendWelcomeEmail(email);
+    })
     .subscribe((status) => {
       console.log('[realtime]', status, new Date().toISOString());
       if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -142,7 +167,7 @@ function subscribe() {
 }
 
 console.log('tiao hermes listener starting…');
-console.log('watching public.orders for new requests. Ctrl-C to stop.\n');
+console.log('watching public.orders (WhatsApp alerts) and public.subscribers (welcome emails). Ctrl-C to stop.\n');
 subscribe();
 
 process.on('SIGINT', () => { console.log('\nstopping.'); process.exit(0); });

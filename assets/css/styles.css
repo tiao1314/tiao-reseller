@@ -463,6 +463,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .prose__list li strong { color: var(--ink); }
 .prose__note { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 28px; font-size: 14px; }
 .prose__note a { text-decoration: underline; font-weight: 600; color: var(--ink); }
+.sell-wa { display: inline-flex; align-items: center; gap: 10px; background: #25D366; color: #fff; font-size: 15px; font-weight: 700; letter-spacing: .02em; padding: 14px 24px; border-radius: 6px; margin: 6px 0 4px; transition: transform .2s var(--ease), opacity .2s; }
+.sell-wa:hover { transform: translateY(-2px); opacity: .95; }
 
 /* ===== My Orders (account) page ===== */
 .account-page { padding: 40px 0 80px; }
