@@ -102,7 +102,7 @@
       .catch(function () {});
   }
 
-  var state = { orders: [], costs: {}, filter: 'all' };
+  var state = { orders: [], costs: {}, orderCost: {}, filter: 'all' };
 
   /* ---------------- boot ---------------- */
   function boot() {
@@ -166,11 +166,15 @@
   function loadData() {
     Promise.all([
       apiGet('orders?select=*&order=created_at.desc'),
-      apiGet('product_costs?select=product_id,cost')
+      apiGet('product_costs?select=product_id,cost'),
+      // frozen per-order cost snapshots (may not exist until freeze_order_costs.sql is run)
+      apiGet('order_costs?select=order_id,cost_total').catch(function () { return []; })
     ]).then(function (r) {
       state.orders = Array.isArray(r[0]) ? r[0] : [];
       state.costs = {};
       (Array.isArray(r[1]) ? r[1] : []).forEach(function (c) { state.costs[c.product_id] = Number(c.cost) || 0; });
+      state.orderCost = {};
+      (Array.isArray(r[2]) ? r[2] : []).forEach(function (c) { state.orderCost[c.order_id] = Number(c.cost_total) || 0; });
       renderAll();
     }).catch(function (err) {
       console.error(err);
@@ -183,6 +187,12 @@
   }
 
   function orderProfit(o) {
+    // Prefer the cost FROZEN when the order was placed, so changing a product's
+    // cost/price later never rewrites the profit of past orders.
+    if (state.orderCost && state.orderCost[o.id] != null) {
+      return Number(o.subtotal || 0) - Number(state.orderCost[o.id]);
+    }
+    // Fallback for orders placed before cost-freezing existed: use current cost.
     var items = Array.isArray(o.items) ? o.items : [];
     return items.reduce(function (s, it) {
       var cost = state.costs[it.id] != null ? state.costs[it.id] : 0;
