@@ -60,7 +60,7 @@
     return '' +
       '<div class="wrap footer__grid">' +
         '<div class="footer__brand"><span class="logo logo--footer">dripdrip</span>' +
-          '<p>Authenticated luxury resale. Bags and shoes — verified, on-hand, ready to ship.</p></div>' +
+          '<p>Authenticated luxury. Bags and shoes — verified, on-hand, ready to ship.</p></div>' +
         '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="account.html">Track Order</a><a href="request.html">Request</a></div>' +
         '<div class="footer__col"><h4>HELP</h4><a href="delivery.html">Delivery</a><a href="returns.html">Returns &amp; Refunds</a><a href="account.html">Track Order</a><a href="#">Contact</a></div>' +
         '<div class="footer__col"><h4>COMPANY</h4><a href="about.html">About Us</a><a href="sell.html">Sell With Us</a></div>' +
