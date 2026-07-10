@@ -17,8 +17,8 @@
   };
 
   var NAV = [
-    { label: 'BAGS', href: 'bags.html' },
-    { label: 'SHOES', href: 'shoes.html' }
+    { label: 'BAGS', href: 'bags' },
+    { label: 'SHOES', href: 'shoes' }
   ];
 
   // dripping wordmark — anchor + falling blobs merged by an SVG goo filter
@@ -40,11 +40,11 @@
     return '' +
       '<div class="announce"><div class="wrap announce__inner">' +
         '<span class="announce__msg">FREE UK DELIVERY OVER £250 · 100% AUTHENTICATED · WORLDWIDE SHIPPING</span>' +
-        '<nav class="announce__links"><a href="account.html">Track My Order</a><span>|</span><a href="#">Help</a></nav>' +
+        '<nav class="announce__links"><a href="account">Track My Order</a><span>|</span><a href="#">Help</a></nav>' +
       '</div></div>' +
       '<div class="wrap header__inner">' +
         '<nav class="nav nav--left">' + links + '</nav>' +
-        '<a href="index.html" class="logo">dripdrip</a>' +
+        '<a href="/" class="logo">dripdrip</a>' +
         '<div class="header__actions">' +
           '<button class="icon-btn" data-open="search">' + ICONS.search + '<span>SEARCH</span></button>' +
           '<button class="icon-btn" data-open="account">' + ICONS.user + '<span class="js-login-label">LOGIN</span></button>' +
@@ -61,9 +61,9 @@
       '<div class="wrap footer__grid">' +
         '<div class="footer__brand"><span class="logo logo--footer">dripdrip</span>' +
           '<p>Authenticated luxury. Bags and shoes — verified, on-hand, ready to ship.</p></div>' +
-        '<div class="footer__col"><h4>SHOP</h4><a href="bags.html">Bags</a><a href="shoes.html">Shoes</a><a href="account.html">Track Order</a><a href="request.html">Request</a></div>' +
-        '<div class="footer__col"><h4>HELP</h4><a href="delivery.html">Delivery</a><a href="returns.html">Returns &amp; Refunds</a><a href="account.html">Track Order</a><a href="#">Contact</a></div>' +
-        '<div class="footer__col"><h4>COMPANY</h4><a href="about.html">About Us</a><a href="sell.html">Sell With Us</a></div>' +
+        '<div class="footer__col"><h4>SHOP</h4><a href="bags">Bags</a><a href="shoes">Shoes</a><a href="account">Track Order</a><a href="request">Request</a></div>' +
+        '<div class="footer__col"><h4>HELP</h4><a href="delivery">Delivery</a><a href="returns">Returns &amp; Refunds</a><a href="account">Track Order</a><a href="#">Contact</a></div>' +
+        '<div class="footer__col"><h4>COMPANY</h4><a href="about">About Us</a><a href="sell">Sell With Us</a></div>' +
       '</div>' +
       '<div class="wrap footer__bottom"><span>© 2026 dripdrip. All rights reserved.</span><span>Every piece independently authenticated.</span></div>';
   }
@@ -77,7 +77,7 @@
           '<div class="drawer__head"><h3>YOUR CART</h3><button class="drawer__close" data-close aria-label="Close">✕</button></div>' +
           '<div class="drawer__items js-cart-items"></div>' +
           '<div class="drawer__foot"><div class="drawer__total"><span>Subtotal</span><strong class="js-cart-total">£0</strong></div>' +
-          '<a href="request.html" class="btn btn--solid btn--block js-checkout">REQUEST ORDER</a></div>' +
+          '<a href="request" class="btn btn--solid btn--block js-checkout">REQUEST ORDER</a></div>' +
         '</aside></div>' +
       // Wishlist drawer
       '<div class="drawer" data-drawer="wishlist"><div class="drawer__backdrop" data-close></div>' +
@@ -104,7 +104,7 @@
         '<nav class="mobile-nav__panel">' +
           '<button class="mobile-nav__close" data-close aria-label="Close">✕</button>' +
           NAV.map(function (n) { return '<a href="' + n.href + '">' + n.label + '</a>'; }).join('') +
-          '<a href="account.html">MY ORDERS</a>' +
+          '<a href="account">MY ORDERS</a>' +
         '</nav></div>' +
       // Toast
       '<div class="toast js-toast" aria-live="polite"></div>';
@@ -190,7 +190,7 @@
         '<button class="modal__close" data-close aria-label="Close">✕</button>' +
         '<div class="account"><div class="account__avatar">' + esc((u.email || '?').charAt(0).toUpperCase()) + '</div>' +
         '<h3>Your account</h3><p>' + esc(u.email) + '</p>' +
-        '<div class="account__links"><a href="account.html">My Orders</a><a href="#" data-open="wishlist">My Wishlist</a></div>' +
+        '<div class="account__links"><a href="account">My Orders</a><a href="#" data-open="wishlist">My Wishlist</a></div>' +
         '<button class="btn btn--outline btn--block js-signout">SIGN OUT</button></div>';
       return;
     }

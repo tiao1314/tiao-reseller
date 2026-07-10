@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     const FROM = Deno.env.get("WELCOME_FROM") || "dripdrip <hello@dripdrip.store>";
     if (!KEY) return new Response("RESEND_API_KEY not set", { status: 200 });
 
-    const track = `https://dripdrip.store/account.html?ref=${encodeURIComponent(ref)}&email=${encodeURIComponent(email)}`;
+    const track = `https://dripdrip.store/account?ref=${encodeURIComponent(ref)}&email=${encodeURIComponent(email)}`;
     const cta = status === "shipped" && o?.tracking_url ? String(o.tracking_url) : track;
     const ctaLabel = status === "shipped" && o?.tracking_url ? "TRACK MY PARCEL" : "VIEW MY ORDER";
     const first = (o?.customer_name || "").split(" ")[0];

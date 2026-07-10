@@ -13,7 +13,7 @@
     var msg = document.getElementById('reqMsg');
 
     if (!items.length) {
-      box.innerHTML = '<p class="checkout__empty">Your cart is empty. <a href="bags.html">Continue shopping →</a></p>';
+      box.innerHTML = '<p class="checkout__empty">Your cart is empty. <a href="bags">Continue shopping →</a></p>';
       document.getElementById('summaryTotal').textContent = money(0);
       form.style.display = 'none';
       return;
@@ -107,7 +107,7 @@
     function redirectToTracking(order) {
       var q = 'ref=' + encodeURIComponent(order.ref_code) +
               '&email=' + encodeURIComponent(order.customer_email) + '&placed=1';
-      window.location.href = 'account.html?' + q;
+      window.location.href = 'account?' + q;
     }
 
     // Demo fallback (no Supabase): show an inline confirmation recap.
@@ -126,7 +126,7 @@
           '<p class="checkout__done-sub">Thanks — your request is in. We’ll reach out at <strong>' + esc(contact) + '</strong> to confirm.</p>' +
           '<div class="checkout__refblock"><span class="checkout__reflabel">Your reference</span>' +
             '<strong class="checkout__refcode">' + esc(order.ref_code) + '</strong>' +
-            '<span class="checkout__refhint">Save this — track your order any time at <a href="account.html">Track My Order</a> using this code &amp; your email.</span></div>' +
+            '<span class="checkout__refhint">Save this — track your order any time at <a href="account">Track My Order</a> using this code &amp; your email.</span></div>' +
           '<div class="checkout__recap">' + recap +
             '<div class="checkout__total"><span>Estimated total</span><strong>' + money(order.subtotal) + '</strong></div>' +
           '</div>' +
@@ -136,7 +136,7 @@
             '<div class="cstep"><span class="cstep__n">3</span><div><strong>We ship it to you</strong><em>Tracked & insured once payment clears.</em></div></div>' +
           '</div>' +
           '<p class="checkout__fine">Nothing is charged yet. Keep an eye on your inbox &amp; messages — we’ll be in touch shortly.</p>' +
-          '<a href="index.html" class="btn btn--solid">CONTINUE SHOPPING</a>' +
+          '<a href="/" class="btn btn--solid">CONTINUE SHOPPING</a>' +
         '</div>';
     }
 

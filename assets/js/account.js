@@ -121,7 +121,7 @@
     var body = el('acctBody');
     if (!allOrders.length) {
       body.innerHTML = '<div class="acct-empty"><p>You haven’t placed any requests yet.</p>' +
-        '<a href="bags.html" class="btn btn--solid">START SHOPPING</a></div>';
+        '<a href="bags" class="btn btn--solid">START SHOPPING</a></div>';
       return;
     }
     var counts = { all: allOrders.length };
@@ -181,13 +181,13 @@
         : '';
       if (!Array.isArray(rows) || !rows.length) {
         body.innerHTML = banner + '<p class="muted-note">We couldn’t load the order details just yet. ' +
-          'It can take a moment — refresh in a few seconds, or <a href="account.html">track it here</a> with your reference &amp; email.</p>';
+          'It can take a moment — refresh in a few seconds, or <a href="account">track it here</a> with your reference &amp; email.</p>';
         return;
       }
       body.innerHTML = banner + orderCard(rows[0], ref) +
-        '<div style="margin-top:24px"><a href="index.html" class="btn btn--solid">CONTINUE SHOPPING</a></div>';
+        '<div style="margin-top:24px"><a href="/" class="btn btn--solid">CONTINUE SHOPPING</a></div>';
     }).catch(function () {
-      body.innerHTML = '<p class="muted-note">Couldn’t load that order right now. <a href="account.html">Try tracking here</a>.</p>';
+      body.innerHTML = '<p class="muted-note">Couldn’t load that order right now. <a href="account">Try tracking here</a>.</p>';
     });
   }
 

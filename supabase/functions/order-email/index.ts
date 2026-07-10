@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     ).join("");
     const first = (o.customer_name || "").split(" ")[0];
 
-    const track = `https://dripdrip.store/account.html?ref=${encodeURIComponent(ref)}&email=${encodeURIComponent(email)}`;
+    const track = `https://dripdrip.store/account?ref=${encodeURIComponent(ref)}&email=${encodeURIComponent(email)}`;
 
     const html = `
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#111;padding:8px">
