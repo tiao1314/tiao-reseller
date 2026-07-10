@@ -6,7 +6,7 @@
 --  customers can see ONLY their own orders, and the admin (you) sees all.
 --
 --  ⚠️ BEFORE RUNNING: replace the email on the marked line below with the
---     email of YOUR admin user (the one you log into admin.html with).
+--     email of YOUR admin user (the one you log into dd-ops-k7f29x.html with).
 -- ============================================================
 
 -- 1) Link orders to the account that created them ------------

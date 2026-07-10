@@ -11,7 +11,7 @@ Customer: browse → cart → Request Order (name + contact, no payment)
       ▼
 WhatsApp group:  "🛍️ New tiao order request! Thanks {client} …"
       ▼
-You: admin.html → review → Accept / Decline → add tracking → Shipped/Delivered
+You: dd-ops-k7f29x.html → review → Accept / Decline → add tracking → Shipped/Delivered
       ▼
 Dashboard: revenue, profit (sale − your cost), orders, average order value
 ```
@@ -44,7 +44,7 @@ row-level security means the public anon key is safe to ship in the browser.
 ## 3. Create your admin login
 1. Supabase → **Authentication → Users → Add user** → your email + a password
    (use the same email as `ADMIN_EMAIL`).
-2. Open **`/admin.html`** on your site → sign in. You'll see the dashboard.
+2. Open **`/dd-ops-k7f29x.html`** on your site → sign in. You'll see the dashboard.
    (The page is `noindex` and only readable by a signed-in user.)
 
 ## 4. Order alerts via hermes (your 24/7 server)
@@ -80,7 +80,7 @@ Place a test order on the site → hermes WhatsApps you within a second. 🎉
 
 ## 5. Go live
 Push to GitHub → GitHub Pages serves the updated site. Share the store URL;
-keep `/admin.html` for yourself.
+keep `/dd-ops-k7f29x.html` for yourself.
 
 ---
 
@@ -98,7 +98,7 @@ keep `/admin.html` for yourself.
 | File | Purpose |
 |---|---|
 | `request.html`, `assets/js/request.js` | Customer order-request page (no payment) |
-| `admin.html`, `assets/js/admin.js`, `assets/css/admin.css` | Private admin dashboard |
+| `dd-ops-k7f29x.html`, `assets/js/admin.js`, `assets/css/admin.css` | Private admin dashboard |
 | `assets/js/db.js` | Shared Supabase client |
 | `supabase/schema.sql` | Tables + row-level security + cost seed + realtime |
 | `hermes/order-listener.js` | Runs on your server; alerts you on every new order |
