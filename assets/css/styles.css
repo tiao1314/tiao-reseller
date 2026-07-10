@@ -639,8 +639,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .req-form input::placeholder, .req-form textarea::placeholder { color: #b3b1ab; }
 .req-form input:focus, .req-form textarea:focus { outline: none; border-color: var(--ink); }
-.req-form textarea { resize: vertical; min-height: 92px; line-height: 1.5; }
+.req-form textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 .req-form .btn { margin-top: 8px; }
+.req-subhead { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin: 8px 0 -4px; padding-top: 12px; border-top: 1px solid var(--line); }
+.req-opt { font-weight: 400; text-transform: none; letter-spacing: normal; color: var(--ink-soft); font-size: 11px; }
+.req-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.req-form input.is-invalid, .req-form textarea.is-invalid { border-color: #c0392b; background: #fdf3f2; }
+@media (max-width: 560px) { .req-row { grid-template-columns: 1fr; } }
 .checkout__fine { font-size: 11px; color: var(--ink-soft); margin-top: 18px; }
 .checkout__empty { color: var(--ink-soft); font-size: 14px; padding: 16px 0; }
 .checkout__empty a { text-decoration: underline; }

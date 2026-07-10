@@ -32,6 +32,9 @@ Deno.serve(async (req) => {
     ).join("");
     const first = (o.customer_name || "").split(" ")[0];
 
+    const addr = [o.address_line1, o.address_line2, o.city, o.postcode, o.country]
+      .map((x: string) => (x || "").trim()).filter(Boolean).map(esc).join("<br>");
+
     const track = `https://dripdrip.store/account?ref=${encodeURIComponent(ref)}&email=${encodeURIComponent(email)}`;
 
     const html = `
@@ -49,6 +52,7 @@ Deno.serve(async (req) => {
           <tr><td style="padding:12px 0 0;border-top:1px solid #eee;font-weight:700">Estimated total</td>
               <td style="padding:12px 0 0;border-top:1px solid #eee;text-align:right;font-weight:700">${money(o.subtotal)}</td></tr>
         </table>
+        ${addr ? `<div style="margin-top:22px"><div style="color:#999;font-size:11px;letter-spacing:.14em">DELIVERING TO</div><div style="color:#333;font-size:14px;line-height:1.6;margin-top:4px">${addr}</div></div>` : ""}
         <p style="margin:26px 0 0"><a href="${track}" style="background:#111;color:#fff;text-decoration:none;padding:13px 26px;border-radius:6px;font-weight:700;font-size:14px;display:inline-block">TRACK MY ORDER</a></p>
         <p style="color:#aaa;font-size:12px;margin-top:32px">You received this because you placed an order request at dripdrip.store.</p>
       </div>`;

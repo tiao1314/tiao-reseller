@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=26" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=27" />
 </head>
 <body>
   <header class="header" id="site-header"></header>
@@ -28,11 +28,19 @@
 
         <div class="checkout__pay">
           <h3>Your details</h3>
-          <form id="requestForm" class="req-form">
+          <form id="requestForm" class="req-form" novalidate>
             <label>Full name<input type="text" name="name" required autocomplete="name" /></label>
             <label>Email<input type="email" name="email" required autocomplete="email" /></label>
-            <label>Phone / WhatsApp<input type="tel" name="phone" autocomplete="tel" placeholder="Optional" /></label>
-            <label>Note<textarea name="note" rows="3" placeholder="Optional — sizing, questions, delivery notes"></textarea></label>
+            <label>Phone / WhatsApp<input type="tel" name="phone" required autocomplete="tel" placeholder="So we can confirm your order" /></label>
+            <h4 class="req-subhead">Delivery address</h4>
+            <label>Address line 1<input type="text" name="address1" required autocomplete="address-line1" placeholder="House number and street" /></label>
+            <label>Address line 2 <span class="req-opt">(optional)</span><input type="text" name="address2" autocomplete="address-line2" placeholder="Flat, building, etc." /></label>
+            <div class="req-row">
+              <label>Town / City<input type="text" name="city" required autocomplete="address-level2" /></label>
+              <label>Postcode<input type="text" name="postcode" required autocomplete="postal-code" /></label>
+            </div>
+            <label>Country<input type="text" name="country" required autocomplete="country-name" value="United Kingdom" /></label>
+            <label>Note <span class="req-opt">(optional)</span><textarea name="note" rows="2" placeholder="Sizing, questions, delivery notes"></textarea></label>
             <button type="submit" class="btn btn--solid btn--block" id="reqSubmit">SEND ORDER REQUEST</button>
           </form>
           <div id="reqMsg" class="checkout__msg" hidden></div>
@@ -51,6 +59,6 @@
   <script src="assets/js/store.js?v=6"></script>
   <script src="assets/js/auth.js?v=11"></script>
   <script src="assets/js/ui.js?v=23"></script>
-  <script src="assets/js/request.js?v=12"></script>
+  <script src="assets/js/request.js?v=13"></script>
 </body>
 </html>

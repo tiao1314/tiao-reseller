@@ -32,6 +32,16 @@
     var F = form.elements;
     function fval(n) { return F[n] ? F[n].value.trim() : ''; }
 
+    // If the DB doesn't have the address columns yet (order_address.sql not run),
+    // fold the address into the note and drop the columns so the order still saves.
+    function foldAddressToNote(o) {
+      var addr = [o.address_line1, o.address_line2, o.city, o.postcode, o.country].filter(Boolean).join(', ');
+      var copy = {}, drop = { address_line1: 1, address_line2: 1, city: 1, postcode: 1, country: 1 };
+      for (var k in o) { if (!drop[k]) copy[k] = o[k]; }
+      copy.note = (o.note ? o.note + ' — ' : '') + (addr ? 'Deliver to: ' + addr : '');
+      return copy;
+    }
+
     // Pre-fill from signed-in user if available
     var user = Store.getUser && Store.getUser();
     if (user) {
@@ -39,15 +49,45 @@
       if (user.email && F.email) F.email.value = user.email;
     }
 
+    // Validate the form ourselves so we can show one clear message + highlight
+    // the first missing field (all delivery details are required).
+    var REQUIRED = [
+      { n: 'name', label: 'your full name' },
+      { n: 'email', label: 'your email' },
+      { n: 'phone', label: 'a phone number' },
+      { n: 'address1', label: 'address line 1' },
+      { n: 'city', label: 'your town / city' },
+      { n: 'postcode', label: 'your postcode' },
+      { n: 'country', label: 'your country' }
+    ];
+    function validate() {
+      form.querySelectorAll('.is-invalid').forEach(function (el) { el.classList.remove('is-invalid'); });
+      for (var i = 0; i < REQUIRED.length; i++) {
+        var f = F[REQUIRED[i].n];
+        if (!f || !f.value.trim()) { flag(f); return 'Please enter ' + REQUIRED[i].label + '.'; }
+      }
+      var email = fval('email');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { flag(F.email); return 'Please enter a valid email address.'; }
+      return null;
+    }
+    function flag(f) { if (f) { f.classList.add('is-invalid'); try { f.focus(); if (f.scrollIntoView) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} } }
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = document.getElementById('reqSubmit');
+      var problem = validate();
+      if (problem) { showMsg('err', problem); return; }
       var refCode = 'DRIP-' + Math.random().toString(36).slice(2, 8).toUpperCase();
       var order = {
         customer_name: fval('name'),
         customer_email: fval('email'),
         customer_phone: fval('phone'),
         note: fval('note'),
+        address_line1: fval('address1'),
+        address_line2: fval('address2'),
+        city: fval('city'),
+        postcode: fval('postcode'),
+        country: fval('country'),
         items: items.map(function (p) { return { id: p.id, brand: p.brand, name: p.name, price: p.price, img: p.img, size: p.chosenSize || '', qty: p.qty || 1 }; }),
         subtotal: total,
         status: 'pending',
@@ -80,10 +120,19 @@
       var bearerP = (auth && auth.isLoggedIn()) ? auth.token().catch(function () { return null; }) : Promise.resolve(null);
 
       bearerP.then(function (bearer) {
-        var triedRefresh = false;
+        var triedRefresh = false, addressStripped = false;
         function attempt(n) {
           return doPost(bearer).then(function (res) {
             if (res.ok) { Store.clearCart(); redirectToTracking(order); return; }
+            // Address columns not migrated yet → strip them into the note and retry.
+            if (res.status === 400 && !addressStripped) {
+              return res.text().then(function (t) {
+                if (/address_line1|address_line2|postcode|schema cache|does not exist|PGRST204/i.test(t)) {
+                  addressStripped = true; order = foldAddressToNote(order); return attempt(n);
+                }
+                throw new Error((function () { try { return JSON.parse(t).message; } catch (e) { return 'HTTP 400'; } })());
+              });
+            }
             if (res.status === 401 && bearer && !triedRefresh) {
               triedRefresh = true;
               return auth.refresh().then(function (nt) { bearer = nt; }, function () { bearer = null; }).then(function () { return attempt(n); });

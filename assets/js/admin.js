@@ -422,6 +422,10 @@
         '<td><div class="adm-cust">' + esc(o.customer_name) + '</div>' +
           '<div class="adm-muted adm-sm">' + esc(o.customer_email) + '</div>' +
           (o.customer_phone ? '<div class="adm-muted adm-sm">' + esc(o.customer_phone) + '</div>' : '') +
+          (function () {
+            var addr = [o.address_line1, o.address_line2, o.city, o.postcode, o.country].filter(Boolean).join(', ');
+            return addr ? '<div class="adm-addr">📦 ' + esc(addr) + '</div>' : '';
+          })() +
           (o.note ? '<div class="adm-note">“' + esc(o.note) + '”</div>' : '') + '</td>' +
         '<td class="adm-items">' + itemHtml + '</td>' +
         '<td class="num">' + money(o.subtotal) + '</td>' +
