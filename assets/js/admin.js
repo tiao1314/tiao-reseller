@@ -166,13 +166,14 @@
   function loadData() {
     Promise.all([
       apiGet('orders?select=*&order=created_at.desc'),
-      apiGet('product_costs?select=product_id,cost'),
+      // costs live on the products table (what the listing editor writes to)
+      apiGet('products?select=id,cost'),
       // frozen per-order cost snapshots (may not exist until freeze_order_costs.sql is run)
       apiGet('order_costs?select=order_id,cost_total').catch(function () { return []; })
     ]).then(function (r) {
       state.orders = Array.isArray(r[0]) ? r[0] : [];
       state.costs = {};
-      (Array.isArray(r[1]) ? r[1] : []).forEach(function (c) { state.costs[c.product_id] = Number(c.cost) || 0; });
+      (Array.isArray(r[1]) ? r[1] : []).forEach(function (c) { state.costs[c.id] = Number(c.cost) || 0; });
       state.orderCost = {};
       (Array.isArray(r[2]) ? r[2] : []).forEach(function (c) { state.orderCost[c.order_id] = Number(c.cost_total) || 0; });
       renderAll();
@@ -215,14 +216,20 @@
       { label: 'Revenue', value: money(revenue), sub: confirmed.length + ' confirmed orders' },
       { label: 'Profit', value: money(profit), sub: margin.toFixed(0) + '% margin', accent: 'profit' },
       { label: 'Avg order value', value: money(aov), sub: 'per confirmed order' },
-      { label: 'Needs review', value: String(pending), sub: 'pending requests', accent: pending ? 'warn' : '' }
+      { label: 'Needs review', value: String(pending), sub: pending ? 'tap to review pending →' : 'pending requests', accent: pending ? 'warn' : '', jump: 'pending' }
     ];
     el('tiles').innerHTML = tiles.map(function (t) {
-      return '<div class="adm-tile' + (t.accent ? ' adm-tile--' + t.accent : '') + '">' +
+      return '<div class="adm-tile' + (t.accent ? ' adm-tile--' + t.accent : '') + (t.jump ? ' adm-tile--click' : '') + '"' + (t.jump ? ' data-jump="' + t.jump + '"' : '') + '>' +
         '<span class="adm-tile__label">' + t.label + '</span>' +
         '<span class="adm-tile__value">' + t.value + '</span>' +
         '<span class="adm-tile__sub">' + t.sub + '</span></div>';
     }).join('');
+    var jumpTile = el('tiles').querySelector('[data-jump]');
+    if (jumpTile) jumpTile.addEventListener('click', function () {
+      state.filter = jumpTile.dataset.jump;
+      renderFilters(); renderTable();
+      var tbl = el('ordersTable'); if (tbl) tbl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   /* ---- SVG line chart: revenue + profit over time (by day) ---- */
