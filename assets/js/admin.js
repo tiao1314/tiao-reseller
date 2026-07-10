@@ -108,7 +108,25 @@
   function boot() {
     if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) { el('notConfigured').hidden = false; return; }
     wireAuth();
-    if (token) showApp(); else showLogin();
+    if (token) gateThenShow(); else showLogin();
+  }
+
+  // Confirm the signed-in user is actually an admin (is_admin() RPC) before
+  // revealing the dashboard. A valid Supabase login that isn't an admin is
+  // rejected here, not just starved of data.
+  function verifyAdmin() {
+    return request('POST', 'rpc/is_admin', { 'Content-Type': 'application/json' }, '{}')
+      .then(function (r) { return r === true; })
+      .catch(function () { return false; });
+  }
+  function gateThenShow() {
+    verifyAdmin().then(function (ok) { if (ok) showApp(); else denyAccess(); });
+  }
+  function denyAccess(customMsg) {
+    token = ''; userEmail = '';
+    localStorage.removeItem(TKEY); localStorage.removeItem(RKEY); localStorage.removeItem(EKEY);
+    showLogin();
+    var m = el('loginMsg'); if (m) { m.hidden = false; m.textContent = customMsg || 'This account isn’t authorised for the admin panel.'; }
   }
 
   function showLogin() { el('loginGate').hidden = false; el('app').hidden = true; }
@@ -143,7 +161,10 @@
         }
         userEmail = (res.d.user && res.d.user.email) || f.email.value.trim();
         saveSession(res.d);
-        showApp();
+        verifyAdmin().then(function (ok) {
+          if (ok) showApp();
+          else denyAccess('That account isn’t authorised for the admin panel.');
+        });
       }).catch(function () {
         btn.disabled = false; btn.textContent = 'SIGN IN';
         msg.hidden = false; msg.textContent = 'Network error — please try again.';
