@@ -706,11 +706,20 @@
     var imgs = p.images ? csvToArr(p.images) : (p.img ? [p.img] : []);
     var selSizes = csvToArr(p.sizes), selColors = csvToArr(p.colors), selGender = p.gender || 'Women';
 
+    function tick1(name, v, on, type) {
+      return '<label class="adm-tick' + (on ? ' is-on' : '') + '"><input type="' + type + '" name="' + name + '" value="' + esc(v) + '"' + (on ? ' checked' : '') + '>' + esc(v) + '</label>';
+    }
     function ticks(name, opts, selected, type) {
-      return opts.map(function (v) {
-        var on = selected.indexOf(v) !== -1;
-        return '<label class="adm-tick' + (on ? ' is-on' : '') + '"><input type="' + type + '" name="' + name + '" value="' + esc(v) + '"' + (on ? ' checked' : '') + '>' + esc(v) + '</label>';
-      }).join('');
+      // include any custom selected values that aren't in the preset list, so
+      // custom colours/sizes survive an edit.
+      var all = opts.slice();
+      selected.forEach(function (v) { if (all.indexOf(v) === -1) all.push(v); });
+      return all.map(function (v) { return tick1(name, v, selected.indexOf(v) !== -1, type); }).join('');
+    }
+    // a small "add custom" row appended under a ticks group
+    function customRow(name, kind) {
+      return '<div class="adm-custom"><input class="adm-custom__in" data-custom-for="' + name + '" placeholder="Add custom ' + kind + '…" />' +
+        '<button type="button" class="adm-btn adm-btn--ghost adm-custom__btn" data-custom-add="' + name + '">Add</button></div>';
     }
 
     el('listingModalBody').innerHTML =
@@ -728,8 +737,8 @@
           '<label>Your cost £<input name="cost" type="number" min="0" step="1" value="' + (p.cost != null ? p.cost : '') + '"></label></div>' +
         '<label>Condition<input name="condition" value="' + esc(p.condition || 'Brand New · Boxed') + '"></label>' +
         '<div class="adm-lfield"><span class="adm-lbl">Gender</span><div class="adm-ticks">' + ticks('gender', GENDERS, [selGender], 'radio') + '</div></div>' +
-        '<div class="adm-lfield"><span class="adm-lbl">Sizes</span><div class="adm-ticks" id="lSizes">' + ticks('sizes', (p.category === 'shoes' ? SHOE_SIZES : BAG_SIZES), selSizes, 'checkbox') + '</div></div>' +
-        '<div class="adm-lfield"><span class="adm-lbl">Colours</span><div class="adm-ticks">' + ticks('colors', COLOURS, selColors, 'checkbox') + '</div></div>' +
+        '<div class="adm-lfield"><span class="adm-lbl">Sizes</span><div class="adm-ticks" id="lSizes">' + ticks('sizes', (p.category === 'shoes' ? SHOE_SIZES : BAG_SIZES), selSizes, 'checkbox') + '</div>' + customRow('sizes', 'size') + '</div>' +
+        '<div class="adm-lfield"><span class="adm-lbl">Colours <span class="adm-muted">(add custom for mixed, e.g. Black/White)</span></span><div class="adm-ticks" id="lColors">' + ticks('colors', COLOURS, selColors, 'checkbox') + '</div>' + customRow('colors', 'colour') + '</div>' +
         '<div class="adm-lrow adm-lrow--checks">' +
           '<label class="adm-check"><input type="checkbox" name="is_new"' + (p.is_new ? ' checked' : '') + '> Mark “new”</label>' +
           '<label class="adm-check"><input type="checkbox" name="active"' + (edit ? (p.active ? ' checked' : '') : ' checked') + '> Visible in store</label>' +
@@ -770,6 +779,29 @@
       var lbl = e.target.closest('.adm-tick'); if (!lbl) return;
       if (e.target.type === 'radio') form.querySelectorAll('.adm-tick').forEach(function (l) { if (l.querySelector('input[name=gender]')) l.classList.toggle('is-on', l.querySelector('input').checked); });
       else lbl.classList.toggle('is-on', e.target.checked);
+    });
+
+    // "Add custom" for sizes / colours (e.g. Black/White, or an odd size)
+    function addCustom(name) {
+      var input = form.querySelector('[data-custom-for="' + name + '"]');
+      var val = (input.value || '').trim(); if (!val) return;
+      var box = name === 'sizes' ? el('lSizes') : el('lColors');
+      var existing = Array.prototype.slice.call(box.querySelectorAll('input[name=' + name + ']'));
+      var match = existing.filter(function (i) { return i.value.toLowerCase() === val.toLowerCase(); })[0];
+      if (match) { match.checked = true; match.closest('.adm-tick').classList.add('is-on'); }
+      else {
+        var label = document.createElement('label');
+        label.className = 'adm-tick is-on';
+        label.innerHTML = '<input type="checkbox" name="' + name + '" value="' + esc(val) + '" checked>' + esc(val);
+        box.appendChild(label);
+      }
+      input.value = ''; input.focus();
+    }
+    form.querySelectorAll('[data-custom-add]').forEach(function (b) {
+      b.addEventListener('click', function () { addCustom(b.dataset.customAdd); });
+    });
+    form.querySelectorAll('[data-custom-for]').forEach(function (inp) {
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addCustom(inp.dataset.customFor); } });
     });
 
     function checkedVals(name) {

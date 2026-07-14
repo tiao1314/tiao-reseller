@@ -305,6 +305,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .card__wish:hover { transform: scale(1.08); }
 .card__wish.is-active { background: var(--ink); color: #fff; }
+/* fill the heart once it's wishlisted */
+.card__wish.is-active svg path { fill: currentColor; }
 .card__add {
   /* z-index MUST sit above the images (main img is z-index:1) or the image
      swallows the click and nothing gets added. */
@@ -761,8 +763,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 @media (max-width: 900px) {
   .nav--left { display: none; }
-  .header__inner { grid-template-columns: auto 1fr auto; }
-  .logo { text-align: left; }
+  /* keep 3 columns and pin the logo to the middle so it stays centred even
+     though the left nav is hidden */
+  .header__inner { grid-template-columns: 1fr auto 1fr; height: 62px; }
+  .logo { grid-column: 2; text-align: center; font-size: 22px; }
+  .header__actions { grid-column: 3; gap: 16px; }
   .icon-btn span { display: none; }
   .burger { display: flex; }
   .cats__inner { grid-template-columns: 1fr; }
