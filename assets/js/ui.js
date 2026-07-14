@@ -96,9 +96,9 @@
       // Login / account modal
       '<div class="modal" data-drawer="account"><div class="modal__backdrop" data-close></div>' +
         '<div class="modal__panel js-account-panel" role="dialog" aria-label="Account"></div></div>' +
-      // Size picker modal (shown before adding a sized item to the cart)
-      '<div class="modal" data-drawer="size"><div class="modal__backdrop" data-close></div>' +
-        '<div class="modal__panel js-size-panel" role="dialog" aria-label="Choose a size"></div></div>' +
+      // Product quick-view modal
+      '<div class="modal modal--product" data-drawer="product"><div class="modal__backdrop" data-close></div>' +
+        '<div class="modal__panel modal__panel--product js-product-panel" role="dialog" aria-label="Product"></div></div>' +
       // Mobile menu
       '<div class="mobile-nav" data-drawer="menu"><div class="mobile-nav__backdrop" data-close></div>' +
         '<nav class="mobile-nav__panel">' +
@@ -115,16 +115,15 @@
     return '' +
       '<article class="card" data-id="' + p.id + '">' +
         '<div class="card__media">' +
-          '<span class="card__badge' + (p.isNew ? ' card__badge--new' : '') + '">' + esc(p.badge) + '</span>' +
           '<button class="card__wish' + (Store.inWishlist(p.id) ? ' is-active' : '') + '" data-wish aria-label="Wishlist">' + ICONS.heart + '</button>' +
           ((p.images && p.images.length > 1) ? '<img class="card__img card__img--alt" src="' + p.images[1] + '" alt="" loading="lazy" />' : '') +
           '<img class="card__img card__img--main" src="' + p.img + '" alt="' + esc(p.brand + ' ' + p.name) + '" loading="lazy" />' +
-          '<button class="card__add" data-add>ADD TO CART</button>' +
+          '<span class="card__add" data-add>ADD TO CART</span>' +
         '</div>' +
         '<div class="card__body">' +
           '<div class="card__brand">' + esc(p.brand) + '</div>' +
           '<div class="card__name">' + esc(p.name) + '</div>' +
-          '<div class="card__row"><span class="card__price">' + money(p.price) + '</span><span class="card__cond">' + esc(p.condition) + '</span></div>' +
+          '<div class="card__row"><span class="card__price">' + money(p.price) + '</span></div>' +
         '</div>' +
       '</article>';
   }
@@ -262,24 +261,52 @@
     }
   }
 
-  /* =================== SIZE PICKER =================== */
-  // Add-to-cart for a sized item: show its sizes, and add once one is chosen.
-  function openSize(p) {
-    var panel = document.querySelector('.js-size-panel');
-    if (!panel) { Store.addToCart(p.id, ''); toast('Added to cart'); open('cart'); return; }
-    var pills = p.sizes.map(function (s) {
-      return '<button type="button" class="sizepick__opt" data-size="' + esc(s) + '" data-id="' + esc(p.id) + '">' + esc(s) + '</button>';
-    }).join('');
+  /* =================== PRODUCT QUICK VIEW =================== */
+  // Approx CSS colour for a named colour swatch (falls back to a neutral).
+  var SWATCH = {
+    black: '#111', white: '#f4f4f2', brown: '#6b4a2b', beige: '#d8c7a8', grey: '#9a9a9a', gray: '#9a9a9a',
+    blue: '#2f4a8c', green: '#3d6b45', red: '#a52a2a', pink: '#e6a3b8', gold: '#c8a24a', silver: '#c7c9cc',
+    multi: 'linear-gradient(135deg,#e35 0 25%,#fa0 25% 50%,#2a6 50% 75%,#28f 75%)'
+  };
+  function swatch(c) { return SWATCH[String(c || '').toLowerCase()] || '#bbb'; }
+
+  function openProduct(p) {
+    var panel = document.querySelector('.js-product-panel');
+    if (!panel) return;
+    var imgs = (p.images && p.images.length ? p.images : [p.img]).filter(Boolean);
+    if (!imgs.length) imgs = [''];
+    var thumbs = imgs.length > 1 ? '<div class="pq__thumbs">' + imgs.map(function (u, i) {
+      return '<button class="pq__thumb' + (i === 0 ? ' is-active' : '') + '" data-pqimg="' + esc(u) + '"><img src="' + esc(u) + '" alt="" loading="lazy"></button>';
+    }).join('') + '</div>' : '';
+
+    var colors = p.colors || [];
+    var colorHTML = colors.length ? '<div class="pq__row"><span class="pq__lbl">Colour</span><div class="pq__colors">' +
+      colors.map(function (c, i) {
+        return '<button class="pq__color' + (i === 0 ? ' is-active' : '') + '" data-pqcolor="' + esc(c) + '">' +
+          '<span class="pq__dot" style="background:' + swatch(c) + '"></span>' + esc(c) + '</button>';
+      }).join('') + '</div></div>' : '';
+
+    var sizes = p.sizes || [];
+    var sizeHTML = sizes.length ? '<div class="pq__row"><span class="pq__lbl">Size</span><div class="pq__sizes">' +
+      sizes.map(function (s) { return '<button class="pq__size" data-pqsize="' + esc(s) + '">' + esc(s) + '</button>'; }).join('') +
+      '</div></div>' : '';
+
     panel.innerHTML =
       '<button class="modal__close" data-close aria-label="Close">✕</button>' +
-      '<div class="sizepick">' +
-        '<div class="sizepick__brand">' + esc(p.brand) + '</div>' +
-        '<div class="sizepick__name">' + esc(p.name) + '</div>' +
-        '<div class="sizepick__label">Select a size</div>' +
-        '<div class="sizepick__opts">' + pills + '</div>' +
-        '<p class="sizepick__hint">Tap a size to add it to your cart.</p>' +
+      '<div class="pq" data-id="' + esc(p.id) + '">' +
+        '<div class="pq__gallery"><div class="pq__main"><img class="js-pq-main" src="' + esc(imgs[0]) + '" alt="' + esc(p.brand + ' ' + p.name) + '"></div>' + thumbs + '</div>' +
+        '<div class="pq__info">' +
+          '<div class="pq__brand">' + esc(p.brand) + '</div>' +
+          '<h2 class="pq__name">' + esc(p.name) + '</h2>' +
+          '<div class="pq__price">' + money(p.price) + '</div>' +
+          (p.condition ? '<div class="pq__meta">' + esc(p.condition) + (p.gender ? ' · ' + esc(p.gender) : '') + '</div>' : '') +
+          colorHTML + sizeHTML +
+          '<p class="pq__msg js-pq-msg" hidden></p>' +
+          '<button class="btn btn--solid btn--block js-pq-add">ADD TO CART</button>' +
+          '<p class="pq__trust">100% authenticated · Tracked &amp; insured delivery · 7-day exchange</p>' +
+        '</div>' +
       '</div>';
-    var el = document.querySelector('[data-drawer="size"]');
+    var el = document.querySelector('[data-drawer="product"]');
     el.classList.add('is-open');
     document.body.style.overflow = 'hidden';
   }
@@ -340,20 +367,41 @@
       if (opener) { e.preventDefault(); open(opener.getAttribute('data-open')); return; }
       if (e.target.closest('[data-close]')) { closeAll(); return; }
 
-      var sizeOpt = e.target.closest('[data-size]');
-      if (sizeOpt) { closeAll(); Store.addToCart(sizeOpt.dataset.id, sizeOpt.dataset.size); toast('Added to cart · ' + sizeOpt.dataset.size); open('cart'); return; }
-
-      var add = e.target.closest('[data-add]');
-      if (add) {
-        var id = add.closest('.card').dataset.id;
-        var p = findProduct(id);
-        if (p && p.sizes && p.sizes.length) { openSize(p); }
-        else { Store.addToCart(id, ''); toast('Added to cart'); open('cart'); }
-        return;
-      }
-
       var wishBtn = e.target.closest('[data-wish]');
       if (wishBtn) { var wid = wishBtn.closest('.card').dataset.id; var on = Store.toggleWishlist(wid); toast(on ? 'Added to wishlist' : 'Removed from wishlist'); return; }
+
+      // Any click on a product card (except the wishlist heart) opens the quick view.
+      var cardEl = e.target.closest('.card');
+      if (cardEl) { var cp = findProduct(cardEl.dataset.id); if (cp) { openProduct(cp); return; } }
+
+      // Quick-view interactions
+      var pqimg = e.target.closest('[data-pqimg]');
+      if (pqimg) { var g = pqimg.closest('.pq'); g.querySelector('.js-pq-main').src = pqimg.dataset.pqimg; g.querySelectorAll('.pq__thumb').forEach(function (t) { t.classList.toggle('is-active', t === pqimg); }); return; }
+      var pqcolor = e.target.closest('[data-pqcolor]');
+      if (pqcolor) {
+        var cwrap = pqcolor.closest('.pq__colors');
+        var cbtns = Array.prototype.slice.call(cwrap.querySelectorAll('.pq__color'));
+        cbtns.forEach(function (c) { c.classList.toggle('is-active', c === pqcolor); });
+        // if there's exactly one photo per colour (uploaded in order), show it
+        var pqEl = pqcolor.closest('.pq'); var cprod = findProduct(pqEl.dataset.id);
+        var cimgs = (cprod && cprod.images) ? cprod.images : [];
+        var ci = cbtns.indexOf(pqcolor);
+        if (cimgs.length === cbtns.length && cimgs[ci]) {
+          pqEl.querySelector('.js-pq-main').src = cimgs[ci];
+          pqEl.querySelectorAll('.pq__thumb').forEach(function (t, i) { t.classList.toggle('is-active', i === ci); });
+        }
+        return;
+      }
+      var pqsize = e.target.closest('[data-pqsize]');
+      if (pqsize) { pqsize.closest('.pq__sizes').querySelectorAll('.pq__size').forEach(function (s) { s.classList.toggle('is-active', s === pqsize); }); return; }
+      if (e.target.closest('.js-pq-add')) {
+        var pq = e.target.closest('.pq'); var pid = pq.dataset.id; var prod = findProduct(pid);
+        var needsSize = prod && prod.sizes && prod.sizes.length;
+        var sizeSel = pq.querySelector('.pq__size.is-active');
+        if (needsSize && !sizeSel) { var msg = pq.querySelector('.js-pq-msg'); msg.hidden = false; msg.textContent = 'Please select a size.'; return; }
+        var chosen = sizeSel ? sizeSel.dataset.pqsize : '';
+        Store.addToCart(pid, chosen); closeAll(); toast('Added to cart' + (chosen ? ' · ' + chosen : '')); open('cart'); return;
+      }
 
       var qi = e.target.closest('[data-qty-inc]'); if (qi) { Store.changeQty(+qi.dataset.qtyInc, 1); return; }
       var qd = e.target.closest('[data-qty-dec]'); if (qd) { Store.changeQty(+qd.dataset.qtyDec, -1); return; }
