@@ -152,10 +152,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .hero__kicker span:first-child { text-decoration: underline; text-underline-offset: 4px; }
 
 .hero__word {
-  font-size: clamp(120px, 27vw, 360px);
+  font-size: clamp(46px, 15vw, 190px);   /* fits the full "dripdrip" wordmark */
   font-weight: 900;
-  letter-spacing: -.04em;
-  line-height: .82;
+  letter-spacing: -.035em;
+  line-height: .84;
   text-align: center;
   position: relative;
   z-index: 1;
@@ -780,13 +780,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 @media (max-width: 720px) {
   .announce__inner { height: auto; min-height: 34px; padding: 7px 0; }
   .announce__msg { font-size: 9.5px; letter-spacing: .06em; text-align: center; line-height: 1.5; }
-  .hero__inner { min-height: 460px; }
-  .hero__kicker, .hero__meta { font-size: 10px; letter-spacing: .22em; }
-  /* keep the giant "tiao" wordmark front-and-centre on phones */
-  .hero__figure { opacity: .26; height: 100%; -webkit-mask-image: none; mask-image: none; }
-  .hero__word { z-index: 3; font-size: clamp(96px, 34vw, 200px); }
-  .hero__cta { position: static; margin-top: 20px; padding: 0 28px; flex-wrap: wrap; }
-  .hero__meta { bottom: 20px; }
+  /* Phone hero: stack everything in normal flow so nothing overlaps */
+  .hero__inner { min-height: 72vh; display: flex; flex-direction: column; justify-content: center; padding: 24px 0; }
+  .hero__kicker { position: static; top: auto; left: auto; padding: 0 26px; font-size: 10px; letter-spacing: .22em; line-height: 1.9; }
+  .hero__word { position: static; z-index: 3; font-size: clamp(52px, 17vw, 150px); text-align: left; padding: 0 24px; margin: 14px 0 4px; }
+  .hero__figure { opacity: .2; height: 100%; -webkit-mask-image: none; mask-image: none; }
+  .hero__meta { position: static; bottom: auto; right: auto; flex-direction: row; gap: 8px; text-align: left; padding: 4px 26px 0; font-size: 10px; letter-spacing: .22em; }
+  .hero__cta { position: static; margin-top: 18px; padding: 0 24px; flex-wrap: wrap; gap: 16px; }
   .product-grid { grid-template-columns: repeat(2, 1fr); gap: 18px 14px; }
   .products__head h2 { font-size: 22px; }
   .card__add { opacity: 1; transform: none; }
